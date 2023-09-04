@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="de" data-bs-theme="dark">
+<head>
+  
+    <meta charset='UTF-8'>
+    <title>{% block title %}Webcams-LSRG{% endblock %}</title>
+  
+    <meta name="robots" content="noindex">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">  
+    
+    <!--
+        <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/all.min.css'>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    -->
+    
+</head>
+<body>
+    {% for camera in config%}
+        {% if camera.website.picture %}
+        <div class="webcam">
+            <img src="/static/output/{{camera.name}}.jpg" />
+        </div>
+        {% endif %}
+
+        {% if camera.website.timelapse and camera.timelapse %}
+        <div class="webcam">
+            <h2>Gestern:</h2>
+            <video controls width="100%">          
+                <source src="/static/output/{{camera.name}}.mp4" type="video/mp4" />
+            
+                Download the
+                <a href="/static/output/{{camera.name}}.mp4">MP4</a>
+                video.
+            </video>
+            
+        </div>
+        {% endif %}
+    {%endfor%}
+</body>
+</html>
+
+<style>
+    .webcam img {
+        width: 100%;
+    }
+    
+    body {
+        background-color: white ;
+    }
+    h2 {
+        color: black;
+    }
+</style>
