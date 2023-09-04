@@ -7,24 +7,12 @@ import yaml
 os.environ['TZ'] = "Europe/Berlin"
 time.tzset()
 
-
-with open("config/cameras.yaml", "r") as yamlfile:
-    config = yaml.load(yamlfile, Loader=yaml.FullLoader)
-    print("camera config read successful")
-#print(yaml)
-
 app = Flask(__name__) 
 
 
-@app.route('/',methods = ['POST', 'GET'])
+@app.route('/',methods = ['GET'])
 def index():
-    return render_template('index.html', config=config)
-
-@app.route('/kantine')
-def get_image():
-    filename = 'static/kantine.jpg'
-    return send_file(filename, mimetype='image/jpg')
-
+    return render_template('index.html')
 
 
 # main driver function
