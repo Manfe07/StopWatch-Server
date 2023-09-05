@@ -11,6 +11,7 @@
 include:
   - template: Security/Container-Scanning.gitlab-ci.yml
   - template: Security/SAST.gitlab-ci.yml
+  - template: Code-Quality.gitlab-ci.yml
 
 
 stages:          # List of stages for jobs, and their order of execution
@@ -65,7 +66,7 @@ docker-build:
 container_scanning:
   variables:
     SECURE_LOG_LEVEL: 'debug'
-    CS_IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+    #CS_IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
     DOCKER_HOST: tcp://docker:2375/
     DOCKER_DRIVER: overlay2
 
