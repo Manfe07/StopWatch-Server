@@ -5,41 +5,91 @@
     <meta charset='UTF-8'>
     <title>{% block title %}Stopwatch{% endblock %}</title>
   
-    <meta name="robots" content="noindex">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">  
     
-    
-    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/all.min.css'>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-    <script type="text/javascript" src="https://unpkg.com/webcam-easy/dist/webcam-easy.min.js"></script>
-  
-    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.min.js"></script>
+
 </head>
 <body>
-    <video id="webcam" autoplay playsinline width="640" height="480"></video>
-    <canvas id="canvas" class="d-none"></canvas>
-    <audio id="snapSound" src="audio/snap.wav" preload = "auto"></audio>
-    <button onclick="takePicture()">Click</button>
+    <div id="timer">Timer</div>
     <script>
-        const webcamElement = document.getElementById('webcam');
-        const canvasElement = document.getElementById('canvas');
-        const snapSoundElement = document.getElementById('snapSound');
-        const webcam = new Webcam(webcamElement, 'user', canvasElement, snapSoundElement);
-        webcam.start()
-            .then(result =>{
-                console.log("webcam started");
-            })
-            .catch(err => {
-                console.log(err);
-            });
-            
-        
-        function takePicture(){
-            let picture = webcam.snap();
-            document.querySelector('#download-photo').href = picture;
-        }
+
+$(document).keypress(function(event) {
+  var keyPressed = String.fromCharCode(event.which);
+  switch (keyPressed) {
+    case '1':
+      stopwatch.start();
+      break;
+    case '2':
+      stopwatch.stop();
+      break;
+    case '3':
+      stopwatch.reset();
+      break;
+    default:
+      // Aktion für andere Tasten oder keine Aktion
+      break;
+  }
+  $("#target").append(keyPressed);
+});
+
+class Stopwatch {
+  constructor() {
+    this.isRunning = false;
+    this.startTime = null;
+    this.endTime = null;
+    this.elapsedTime = 0;
+  }
+
+  start() {
+    if (!this.isRunning) {
+      this.isRunning = true;
+      this.startTime = new Date();
+      this.tick();
+    }
+  }
+
+  stop() {
+    if (this.isRunning) {
+      this.isRunning = false;
+      this.endTime = new Date();
+      this.elapsedTime += this.endTime - this.startTime;
+    }
+  }
+
+  reset() {
+    this.isRunning = false;
+    this.startTime = null;
+    this.endTime = null;
+    this.elapsedTime = 0;
+    this.updateDisplay();
+  }
+
+  tick() {
+    if (this.isRunning) {
+      this.endTime = new Date();
+      this.elapsedTime = this.endTime - this.startTime;
+      this.updateDisplay();
+      requestAnimationFrame(() => this.tick());
+    }
+  }
+
+  updateDisplay() {
+    const milliseconds = Math.floor(this.elapsedTime);
+    const seconds = Math.floor(milliseconds / 1000);
+    const minutes = Math.floor(seconds / 60);
+
+    const formattedTime = `${String(seconds).padStart(2, '0')}.${String((Math.round((milliseconds % 1000) / 10))).padStart(2, '0')}`;
+
+    $("#time").text(formattedTime);
+  }
+}
+const stopwatch = new Stopwatch();
     </script>
+
 </body>
 </html>
 
