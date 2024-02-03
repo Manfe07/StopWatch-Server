@@ -1,3 +1,5 @@
 Flask
-gunicorn
+flask-socketio
+gunicorn==21.2.0
+eventlet==0.33.3
 pyyaml

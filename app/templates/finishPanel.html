@@ -1,0 +1,340 @@
+{% extends "layout.html" %}
+{% block title %}Stopwatch Ziel-Panel{% endblock %}
+
+{% block header %}
+<link href="/static/css/camera.css" rel="stylesheet">
+{% endblock %}
+
+{% block content%}
+<div class="subHeader">
+  <div id="toggleChat" class="headerItem">Chat</div>
+</div>
+<div class="subContent">
+  <div id="chatWindow" class="chatDiv">
+    <div class="chatMessages"></div>
+    <div class="chatFooter">
+      <input type="text" id="messageInput" name="messageInput">
+      <button id="sendMessage" class="btn btn-info">Send</button>
+    </div>
+  </div>
+
+
+  <div id="stateConnection">Verbindung: </div>
+  <div id="target">Input: </div>
+  <div id="stateStopwatch">Status: </div>
+  <div id="time">Zeiten</div>
+  <div id="raceSettings">
+    <input type="number" id="activeLanesInput" min="1" max="4" />
+  </div>
+  <div id="controls">Steuerungen
+    <button>Buttons will be generated with javscript</button>
+  </div>
+  <div class="camera">
+    <video id="video">Video stream not available.</video>
+    <button id="startbutton">Take photo</button>
+  </div>
+  <canvas id="canvas" style="display: none"> </canvas>
+  <div class="photoFinish">
+    <img id="photoLane0" />
+    <img id="photoLane1" />
+    <img id="photoLane2" />
+    <img id="photoLane3" />
+  </div>
+
+  <a>Debug:</a>
+  <div id="debugDiv"></div>
+
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script type="module">
+  import { socket, watchDog, wsData } from "/static/scripts/socket.js";
+  import { stopwatch } from "/static/scripts/stopwatch.js";
+  import "/static/scripts/chat.js";
+  import { finishCam } from "/static/scripts/camera.js";
+
+  wsData.device = "finish";
+  watchDog.pingInterval = 1000;
+  stopwatch.masterClock = true;
+  stopwatch.init();
+  finishCam.startup();
+
+  watchDog.customFunction = function (state) {
+    if (state) {
+      $("#stateConnection").text("Verbindung: Online")
+    }
+    else {
+      $("#stateConnection").text("Verbindung: Offline")
+    }
+    stopwatch.customUpdateFunction();
+    stopwatch.customDisplayFunction();
+  }
+
+
+  stopwatch.customUpdateFunction = function () {
+    updateControls();
+    updateDebug();
+  }
+
+  stopwatch.customStopFunction = function (lane) {
+    let start = new Date();
+    console.log("Photo Started:", start);
+
+    if(finishCam.takePicture(lane)){
+      let target = "#photoLane" + lane;
+      $(target).attr('src', finishCam.photos[lane]);
+      let now = new Date();
+      console.log("Photo finished:", now);
+      console.log("Photo delay:", now - start);
+    }
+    /*
+    finishCam.takePicture(lane).then(function () {
+      let target = "#photoLane" + lane;
+      $(target).attr('src', finishCam.photos[lane]);
+      let now = new Date();
+      console.log("Photo finished:", now);
+      console.log("Photo delay:", now - start);
+    });
+    */
+    console.log("FunctionEND");
+  }
+
+  var msgData = NaN;
+
+  $(document).keypress(function (event) {
+    var keyPressed = String.fromCharCode(event.which);
+    if (!($("#messageInput").is(":focus"))) {
+      switch (keyPressed) {
+        case '1':
+          if (stopwatch.data.running) {
+            stopwatch.stopLane(0);
+          }
+          else {
+            stopwatch.start();
+          }
+          break;
+        case '2':
+          if (stopwatch.data.running) {
+            stopwatch.stopLane(1);
+          }
+          else {
+            stopwatch.start();
+          }
+          break;
+        case '3':
+
+          if (stopwatch.data.running) {
+            stopwatch.stopLane(2);
+          }
+          else {
+            stopwatch.start();
+          }
+          break;
+        case '4':
+
+          if (stopwatch.data.running) {
+            stopwatch.stopLane(3);
+          }
+          else {
+            stopwatch.start();
+          }
+          break;
+        case '5':
+          stopwatch.toggleArm();
+          break;
+
+        default:
+          break;
+      }
+      //console.log(keyPressed);
+      //updateDebug();
+      //console.log({ "wsData_Send": wsData });
+      $("#target").text("Input: " + keyPressed + " (" + event.which + ")" + " (" + event.key + ")");
+    }
+  });
+
+
+
+
+  stopwatch.customDisplayFunction = function () {
+    var table = $('<table id="timeTable">');
+    for (let i = 0; i < stopwatch.data.activeLanes; i++) {
+      var milliseconds = Math.floor(stopwatch.duration[i]);
+      var seconds = Math.floor(milliseconds / 1000);
+      //var minutes = Math.floor(seconds / 60);
+
+      let timeText = `${String(seconds).padStart(2, '0')}.${String((Math.round((milliseconds % 999) / 10))).padStart(2, '0')}`;
+
+      var row = $("<tr>");
+      let laneColumn = $('<td>').addClass('laneCell').html("Bahn " + (i + 1) + ":&nbsp;");
+      let timeColumn = $('<td>').addClass('timeCell').text(timeText);
+      row.append(laneColumn);
+      row.append(timeColumn);
+      table.append(row);
+    }
+    $('#time').html("");
+    $('#time').append(table);
+  }
+
+
+  $('.controlButton').on("click", function () {
+    console.log($(this).attr('class'), $(this).index());
+  });
+  $('#activeLanesInput').on("change", function () {
+    stopwatch.setActiveLanes(parseInt($(this).val()));
+  });
+
+  function updateControls() {
+    $('#activeLanesInput').val(stopwatch.data.activeLanes);
+    var controlDiv = $('<div>').addClass('controlDiv');
+
+    // ARM button
+    if (true) {
+      var button = $('<button>').addClass('controlButton arm');
+
+      if (stopwatch.data.armed) {
+        button.text("Scharf");
+      }
+      else {
+        button.text("Unscharf");
+      }
+
+      if (stopwatch.data.running) {
+        button.attr('disabled', 'true');
+        button.addClass('btn btn-secondary');
+      }
+      else if (stopwatch.data.armed) {
+        button.addClass('btn btn-success');
+      }
+      else {
+        button.addClass('btn btn-warning');
+      }
+      controlDiv.append(button);
+    }//
+
+
+    // START button
+    if (true) {
+      var button = $('<button>').addClass('controlButton start');
+      button.text("Start");
+      if (stopwatch.data.armed & !stopwatch.data.running) {
+        button.addClass('btn btn-warning');
+      }
+      else if (!stopwatch.data.armed & !stopwatch.data.running) {
+        button.addClass('btn btn-danger');
+      }
+      else {
+        button.addClass('btn btn-secondary');
+        button.attr('disabled', 'true');
+      }
+      controlDiv.append(button);
+    }//
+
+    // STOP Button
+    if (true) {
+      var stopButtonDiv = $('<div>').addClass('stopButtonDiv');
+
+
+      for (let i = 0; i < stopwatch.data.laneFinished.length; i++) {
+        var button = $('<button>').addClass('controlButton stop');
+
+        if (!stopwatch.data.running) {
+          button.addClass('btn btn-secondary');
+          button.attr('disabled', 'true');
+          button.html("Bahn " + (i + 1) + "<br>gestoppt");
+        }
+        else if (!stopwatch.data.laneFinished[i]) {
+          button.addClass('btn btn-warning');
+          button.html("Stop<br>Bahn " + (i + 1));
+        }
+        else {
+          button.addClass('btn btn-success');
+          button.html("Bahn " + (i + 1) + "<br>gestoppt");
+        }
+        button.css({
+          'width': ((100 / stopwatch.data.laneFinished.length) + '%'),
+          'marging': (5 + '%'),
+        });
+
+        stopButtonDiv.append(button);
+      }
+      controlDiv.append(stopButtonDiv);
+    }
+
+    $('#controls').html(controlDiv);
+
+    $(".controlButton").click(function () {
+      if ($(this).hasClass("arm")) {
+        stopwatch.toggleArm();
+      }
+      if ($(this).hasClass("start")) {
+        stopwatch.start();
+      }
+      if ($(this).hasClass("stop")) {
+        var index = $(this).index();
+        stopwatch.stopLane(index);
+      }
+    });
+
+  }
+
+  function updateDebug() {
+    //console.log(stopwatch.data);
+    //console.log(stopwatch);
+    var textWs = $("<a></a>").text("Sended: " + JSON.stringify(wsData)).html();
+    var textMsg = $("<a></a>").text("Received: " + JSON.stringify(msgData)).html();
+    var textStopwatch = $("<a></a>").text("StopwatchData: " + JSON.stringify(stopwatch.data)).html();
+    $('#debugDiv').html(textWs + "<br>" + textMsg + "<br>" + textStopwatch + "<br>");
+
+  }
+
+</script>
+{% endblock %}
+
+
+{% block style %}
+<style>
+  .photoFinish img {
+    width: 30%;
+    max-height: 700px;
+  }
+
+  .infoDefault {
+    background-color: hsl(208.24, 7.3%, 35%);
+    color: hsl(0, 0%, 10%);
+  }
+
+  .infoNormal {
+    background-color: hsl(152.18, 68.75%, 20%);
+    color: hsl(0, 0%, 10%);
+  }
+
+  .infoWarning {
+    background-color: hsl(45, 100%, 35%);
+    color: hsl(0, 0%, 10%);
+  }
+
+  .infoCritical {
+    background-color: hsl(354.25, 70.46%, 20%);
+    color: hsl(0, 0%, 10%);
+  }
+
+  .controlDiv {
+    width: 100%;
+  }
+
+  .controlDiv .arm {
+    width: 50%;
+  }
+
+  .controlDiv .start {
+    width: 50%;
+  }
+
+  .controlDiv .stop {
+    width: auto;
+  }
+</style>
+{% endblock %}

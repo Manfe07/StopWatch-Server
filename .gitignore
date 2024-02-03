@@ -3,3 +3,7 @@ __pycache__
 static/output
 output
 config.yaml
+.vscode/settings.json
+logs/app.log
+logs/log.txt
+docker-compose.yml
