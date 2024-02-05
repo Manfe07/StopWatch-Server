@@ -1,0 +1,134 @@
+{% extends "layout.html" %}
+
+{% block title %}Teams{% endblock %}
+
+{% block content %}
+
+<div class='container'>
+    <div class='card'>
+        <div class='card-header'>
+            <h1>Teams</h1>
+        </div>
+        <div class='card-body'>
+            <p>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Name Kurz</th>
+                        <th scope="col">Kontakt</th>
+                        <th scope="col">Telefon</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for team in teams %}
+                    <tr class="team_row" id="{{team['id']}}">
+                        <td class="id">{{team['id']}}</td>
+                        <td class="name"><strong>{{team['name']}}</strong></td>
+                        <td class="nameShort"><strong>{{team['nameShort']}}</strong></td>
+                        <td class="contact">{{team['contact']}}</td>
+                        <td class="phoneNumber">
+                            <a href="tel:{{team['phoneNumber']}}">{{team['phoneNumber']}}</a>
+                        </td>
+                        <td class="state">{{team['state']}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </p>
+        </div>
+    </div>
+    <div class='card'>
+        <div class='card-header'>
+            <h1>Team erstellen</h1>
+        </div>
+        <div class='card-body'>
+            <form action="{{ url_for('teams.addteam') }}" method="POST">
+                <div class="login-screen">
+                    <div class="control-group">
+                        <a>Teamname lang*</a><br>
+                        <input type="text" class="login-field" value="" required placeholder="Teamname in Lange" name="name_long">
+                    </div>
+                    <div class="control-group">
+                        <a>Teamname kurz*</a><br>
+                        <input type="text" class="login-field" value="" required placeholder="Teamname kurz" name="name_short">
+                    </div>
+                    <div class="control-group">
+                        <a>Kontakt Person</a><br>
+                        <input type="text" class="login-field" value="" required placeholder="Kontaktperson" name="contact">
+                    </div>
+                    <div class="control-group">
+                        <a>Telefon Nummer</a><br>
+                        <input type="text" class="login-field" value="" required placeholder="0123 4567890" name="phone">
+                    </div>
+                    
+                    <div class="control-group">
+                        <a>Status*</a><br>
+                        <select id="state" name="state">
+                            <option value=1>Aktiv</option>
+                            <option value=0>Inaktiv</option>
+                            <option value=3>Unklar</option>
+                        </select>
+                    </div><
+                    <div class="control-group">
+                        <a>email</a><br>
+                        <input type="email" class="login-field" value="" placeholder="email" name="email">
+                    </div>
+                    <input type="submit" value="Create" class="btn btn-primary btn-large btn-block">
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+</div>
+
+<style>
+</style>
+<script>
+    $(".team_row").click(function (event) {
+        id = this.id;
+
+        //$(".highlight").removeClass("highlight");
+        //$(this).addClass("highlight");
+
+
+        $(this).addClass('highlight').siblings().removeClass('highlight');
+
+        var data = { 'id': parseInt(id) };
+        fetch('/check_ID', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+
+        })
+            .then((response) => response.json())
+            .then((json) => {
+                console.log(json);
+                $("#info_header").text(id + " " + json['name']);
+                $("#info_name").text(json['name']);
+                $("#info_1").text(json['info1']);
+                $("#info_2").text(json['info2']);
+                $("#info_id").text(json['id']);
+                $("#info_state").text(json['state']);
+                $("#info_timestamp").text(json['created_at']);
+                
+                if(json['url'] != null){
+                    $("#info_url").text(json['url']);
+                    $("#info_url").attr("href", json['url'])
+                    $("#info_url").attr("target", "_blank")
+                }
+                else{
+                    $("#info_url").text("Kein url hinterlegt");
+                    $("#info_url").removeAttr("href")
+                    $("#info_url").removeAttr("target")
+                }
+            });
+    });
+</script>
+{% endblock %}

@@ -33,12 +33,19 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+                    {% if session['permission'] >= 1 %}
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Verwaltung</a>
+                        <a class="nav-link" href="{{ url_for('users.logout')}}">Logout</a>
                     </li>
+                    {% endif %}
+
+                    {% if session['permission'] <= 0 %}
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Einstellungen</a>
+                        <a class="nav-link" href="{{ url_for('users.login')}}">Login</a>
                     </li>
+                    {% endif %}
+                    {% if session['permission'] >= 1 %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Steuerungen
@@ -51,6 +58,23 @@
                             <li><a class="dropdown-item" href="#">Debug</a></li>
                         </ul>
                     </li>
+                    {% endif %}
+                    {% if session['permission'] >= 2 %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Verwalten
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('teams.overview')}}">Teams</a></li>
+                            {% if session['permission'] >= 3 %}
+                            <li><a class="dropdown-item" href="{{ url_for('users.manageUsers')}}">Benutzer</a></li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                    {% endif %}
+
+
+    
                 </ul>
             </div>
         </div>

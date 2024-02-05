@@ -7,3 +7,6 @@ config.yaml
 logs/app.log
 logs/log.txt
 docker-compose.yml
+.env/
+*.db
+*log*
