@@ -32,7 +32,17 @@
                         <td class="phoneNumber">
                             <a href="tel:{{team['phoneNumber']}}">{{team['phoneNumber']}}</a>
                         </td>
-                        <td class="state">{{team['state']}}</td>
+                        <td class="state">
+                            {% if team['state'] == 0 %}
+                                Unklar
+                            {% elif team['state'] == 1 %}
+                                Aktiv
+                            {% elif team['state'] == 2 %}
+                                Inaktiv
+                            {% else %}
+                                UNBEKANNT ({{team['state']}})
+                            {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -67,14 +77,10 @@
                     <div class="control-group">
                         <a>Status*</a><br>
                         <select id="state" name="state">
+                            <option value=0>Unklar</option>
                             <option value=1>Aktiv</option>
-                            <option value=0>Inaktiv</option>
-                            <option value=3>Unklar</option>
+                            <option value=2>Inaktiv</option>
                         </select>
-                    </div><
-                    <div class="control-group">
-                        <a>email</a><br>
-                        <input type="email" class="login-field" value="" placeholder="email" name="email">
                     </div>
                     <input type="submit" value="Create" class="btn btn-primary btn-large btn-block">
                 </div>

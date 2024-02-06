@@ -1,14 +1,16 @@
 from flask import Blueprint, render_template, Flask, request, jsonify, redirect, url_for, session, flash
-import module_teams.datahandler as datahandler
+import module_teams.datahandler as dh
+from module_teams.datahandler import db, Team
+
 
 teams_Blueprint = Blueprint('teams', __name__,  template_folder='templates')
 
 def init():
-    datahandler.init()
+    dh.init()
 
 @teams_Blueprint.route('/', methods=['GET'])
 def overview():
-    teams = datahandler.getTeams()
+    teams = dh.getTeams()
     #teams = datahandler.db.session.query(datahandler.Team)
     #result = {}
     #for r in query:
@@ -21,24 +23,34 @@ def addteam():
     if request.method == 'POST':
         form = request.form
         #ToDo: change to new format
-        teamData = {
-            'name' : form['name'],
-            'info1' : form['info1'],
-            'info2' : form['info2'],
-            'url' : form['url'],
-        }
-        if datahandler.addteam(teamData):
+ 
+        try:
+            newTeam = Team(
+            name = form["name_long"],
+            nameShort = form.get("name_short",None),
+            contact = form.get("contact",None),
+            phoneNumber = form.get("phone", None),
+            state = form.get("state", 1)
+            )
+            print(newTeam)
+            db.session.add(newTeam)
+            db.session.commit()
+
             return redirect(url_for('teams.overview'))
-        else:
-            flash("Error creating team " + teamData["name"] )
+
+
+        except Exception as e:
+            print(e)
+            flash("Error creating team " + form["name_long"] )
             return redirect(url_for('teams.overview'))
+        
     elif request.method == 'GET':
         return redirect(url_for('teams.overview'))
 
 
-def getteamById(id):
+def getTeamById(id):
     try:
-        query = datahandler.db.session.query(datahandler.team).where(datahandler.team.id == id)[0]
+        query = db.session.query(Team).where(Team.id == id)[0]
         return query.getDict()
     except Exception as e:
         print(e)

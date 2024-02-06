@@ -9,3 +9,4 @@ logs/log.txt
 docker-compose.yml
 .env/
 *.db
+logs/
