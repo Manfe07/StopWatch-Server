@@ -10,3 +10,4 @@ docker-compose.yml
 .env/
 *.db
 logs/
+app/config.ini

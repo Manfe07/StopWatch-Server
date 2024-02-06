@@ -11,13 +11,14 @@ import logging
 import datetime
 import time
 import os
-import yaml
+import configparser
 import json
 
 os.environ['TZ'] = "Europe/Berlin"
 time.tzset()
 
-
+config = configparser.ConfigParser()
+config.read('config.ini')
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 fh = logging.FileHandler('logs/app.log')
@@ -29,7 +30,7 @@ logger.addHandler(fh)
 
 app = Flask(__name__) 
 
-app.config['SECRET_KEY'] = 'o6HZY5rU2DsDYjkxcULztAaFm9gANikLdkFrDGmP57UgKctUMGmPjSFoD2h4re8UeaDq4gn85yUTKaR6KRf3jXHUhnFyEyc4UWG5WR!'
+app.config['SECRET_KEY'] = config['Flask']['SECRET_KEY']
 socketio = SocketIO(app, cors_allowed_origins='*')
 
 app.register_blueprint(teams.teams_Blueprint, url_prefix="/teams")
