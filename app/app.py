@@ -1,7 +1,11 @@
-from flask import Flask, send_file, render_template
+from flask import Flask, send_file, render_template, redirect
 from flask_socketio import SocketIO, send, emit
 from tools import * 
 
+import module_teams.teams as teams
+import module_users.users as users
+
+from database import db
 import logging
 
 import datetime
@@ -16,15 +20,33 @@ time.tzset()
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
-fh = logging.FileHandler('/logs/app.log')
+fh = logging.FileHandler('logs/app.log')
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 fh.setFormatter(formatter)
 logger.addHandler(fh)
+
+
 
 app = Flask(__name__) 
 
 app.config['SECRET_KEY'] = 'o6HZY5rU2DsDYjkxcULztAaFm9gANikLdkFrDGmP57UgKctUMGmPjSFoD2h4re8UeaDq4gn85yUTKaR6KRf3jXHUhnFyEyc4UWG5WR!'
 socketio = SocketIO(app, cors_allowed_origins='*')
+
+app.register_blueprint(teams.teams_Blueprint, url_prefix="/teams")
+app.register_blueprint(users.users_Blueprint, url_prefix="/users")
+
+app.config['SQLALCHEMY_DATABASE_URI'] ='sqlite:///../test.db/' 
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['DEBUG'] = True
+
+
+with app.app_context():
+    db.init_app(app)
+    db.create_all()
+    teams.init()
+    users.init()
+    db.session.commit()
+
 
 @app.route('/',methods = ['GET'])
 def index():
