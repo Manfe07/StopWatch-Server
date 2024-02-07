@@ -11,8 +11,7 @@ services:
       - ./logs:/logs
     #ports:
     #  - 8000:8000
-    #command: gunicorn -w 1 -b :8000 app:app --access-logfile ./logs/log.txt --log-level info 
-    command: gunicorn --worker-class eventlet -w 1 -b :8000 app:app --access-logfile ./logs/log.txt --log-level debug 
+    #command: gunicorn --worker-class eventlet -w 1 -b :8000 app:app --access-logfile ./logs/log.txt --log-level debug 
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.stopwatch.rule=Host(`stopwatch.domain.de`)"

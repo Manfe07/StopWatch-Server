@@ -1,5 +1,6 @@
 from flask import Flask, send_file, render_template, redirect
 from flask_socketio import SocketIO, send, emit
+from flask_migrate import Migrate
 from tools import * 
 
 import module_teams.teams as teams
@@ -40,6 +41,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = config['Flask']['SQLALCHEMY_DATABASE_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['DEBUG'] = True
 
+migrate = Migrate(app, db)
 
 with app.app_context():
     db.init_app(app)
