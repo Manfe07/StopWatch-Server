@@ -2,7 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func
 from database import db
 
-class ItemGroupe(db.Model):
+class ItemGroup(db.Model):
   id = db.Column(db.Integer, primary_key=True)
   name = db.Column(db.VARCHAR(100), nullable=False)
   description = db.Column(db.VARCHAR(100), nullable=True)
@@ -15,5 +15,5 @@ class Item(db.Model):
   description = db.Column(db.VARCHAR(100), nullable=True)
   price = db.Column(db.Float, nullable=True)
   state = db.Column(db.Integer, server_default= "0")
-  groupeId = db.Column(db.Integer, server_default= "0")
+  groupId = db.Column(db.Integer, server_default= "0")
   changedBy = db.Column(db.Integer, server_default= "0")
