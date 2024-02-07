@@ -5,4 +5,5 @@ eventlet==0.33.3
 pyyaml==6.0.1
 passlib==1.7.4
 Flask-SQLAlchemy==3.1.1
+Flask-Migrate==4.0.5
 #SQLAlchemy==2.0.25
