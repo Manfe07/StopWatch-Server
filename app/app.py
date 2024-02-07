@@ -36,7 +36,7 @@ socketio = SocketIO(app, cors_allowed_origins='*')
 app.register_blueprint(teams.teams_Blueprint, url_prefix="/teams")
 app.register_blueprint(users.users_Blueprint, url_prefix="/users")
 
-app.config['SQLALCHEMY_DATABASE_URI'] ='sqlite:///../test.db/' 
+app.config['SQLALCHEMY_DATABASE_URI'] = config['Flask']['SQLALCHEMY_DATABASE_URI']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['DEBUG'] = True
 
