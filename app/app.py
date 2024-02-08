@@ -5,6 +5,7 @@ from tools import *
 
 import module_teams.teams as teams
 import module_users.users as users
+import module_sales.sales as sales
 
 from database import db
 import logging
@@ -36,6 +37,7 @@ socketio = SocketIO(app, cors_allowed_origins='*')
 
 app.register_blueprint(teams.teams_Blueprint, url_prefix="/teams")
 app.register_blueprint(users.users_Blueprint, url_prefix="/users")
+app.register_blueprint(sales.sales_Blueprint, url_prefix="/sales")
 
 app.config['SQLALCHEMY_DATABASE_URI'] = config['Flask']['SQLALCHEMY_DATABASE_URI']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -48,6 +50,7 @@ with app.app_context():
     db.create_all()
     teams.init()
     users.init()
+    sales.init()
     db.session.commit()
 
 

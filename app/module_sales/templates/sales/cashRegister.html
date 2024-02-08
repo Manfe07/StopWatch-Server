@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+
+{% block title %}Kasse{% endblock %}
+
+{% block content %}
+
+<div class='container'>
+{% for group in itemGroups %}
+    <h2>{{ group.name }}</h2>
+    <div class="buttonGrid">
+        {% for item in group.items %}
+            <div class="itemButton itemGroup_{{group.id}}" style="background-color: {{ group.color }};">
+                <a><b>{{item.name}}</b></a><br>
+                <a><small>{{item.description}}</small></a><br>
+                <a>{{'%0.2f'| format(item['price']|float)}} €</a>
+
+            </div>
+        {% endfor %}
+    </div>
+{% endfor %}
+</div>
+
+<style>
+    .buttonGrid{
+        display: grid;
+        grid-template-columns: 25% 25% 25% 25%;
+    }
+    .itemButton{
+        border: 1px solid black;
+        text-align: center;
+        align-content: center;
+        cursor: pointer;
+        transition: filter 0.3s ease 0.3s;
+    }
+    
+    .itemButton.clicked {
+        filter: drop-shadow(0px 0px 0px steelblue);
+        transition: filter 0s;
+    }
+
+</style>
+<script>
+ 
+</script>
+{% endblock %}

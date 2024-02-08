@@ -20,26 +20,30 @@ def getSessionUser():
 @users_Blueprint.route('/login', methods=['POST', 'GET'])
 def login():
     sessionUser = getSessionUser()
-    if request.method == 'POST':
-        login = request.form
-        userName = login['username']
-        password = login['password']
-
-        signedIn, permission, user= datahandler.verify(userName,password)
-        if signedIn:
-            session['logged_in'] = True
-            session['permission'] = permission
-            session['user_name'] = userName
-
-        else:
-            session['logged_in'] = False
-            session['permission'] = 0
-            session['user_name'] = None
-            flash('wrong password!')
+    if sessionUser["permission"] > 0:
         return redirect(url_for('index'))
-    else:
-        
-        return render_template('users/login.html')
+
+    else: 
+        if request.method == 'POST':
+            login = request.form
+            userName = login['username']
+            password = login['password']
+
+            signedIn, permission, user= datahandler.verify(userName,password)
+            if signedIn:
+                session['logged_in'] = True
+                session['permission'] = permission
+                session['user_name'] = userName
+                session['user_id'] = user.id
+                return redirect(url_for('index'))
+
+            else:
+                flash('wrong password!')
+                logout()
+                return redirect(url_for('users.login'))
+        else:
+            
+            return render_template('users/login.html')
 
 
 
@@ -50,6 +54,7 @@ def logout():
     session['logged_in'] = False
     session['permission'] = 0
     session['user_name'] = None
+    session['user_id'] = None
     return redirect(url_for('index'))
 
 
