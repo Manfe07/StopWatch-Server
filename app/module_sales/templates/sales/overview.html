@@ -47,66 +47,42 @@
 
                     </tr>
                     {% endfor %}
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td class="buttons">
+                            <button type="button" class="btn btn-success" onClick="addGroup()">New</button>
+                        </td>
+
+                    </tr>
                 </tbody>
             </table>
             </p>
         </div>
     </div>
-    <div class='card'>
+    <div class='card' id="groupEditDiv" style="visibility:collapse;">
         <div class='card-header'>
-            <h1>Gruppe erstellen</h1>
+            <h1 id="groupEditTitel">Gruppe erstellen</h1>
         </div>
         <div class="card-body">
             <div class="buttonGrid">
-                {% for n in range(2) %}
-                    <div class="itemButton dark" >
-                        <a><b>Test Artikel</b></a><br>
-                        <a><small>Beschreibung</small></a><br>
-                        <a>12.34 €</a>
-                    </div>
-                {% endfor %}
-                {% for n in range(2) %}
-                    <div class="itemButton light">
-                        <a><b>Test Artikel</b></a><br>
-                        <a><small>Beschreibung</small></a><br>
-                        <a>12.34 €</a>
-                    </div>
-                {% endfor %}
+                <div class="itemButton dark" >
+                    <a><b>Test Artikel</b></a><br>
+                    <a><small>Beschreibung</small></a><br>
+                    <a>12.34 €</a>
+                </div>
+                <div class="itemButton light">
+                    <a><b>Test Artikel</b></a><br>
+                    <a><small>Beschreibung</small></a><br>
+                    <a>12.34 €</a>
+                </div>
             </div><br>
         </div>
         <div class='card-body'>
-            <form action="{{ url_for('sales.addItemGroup') }}" method="POST">
-                <div class="itemGroupForm">
-                    <div class="control-group">
-                        <a>Name*</a><br>
-                        <input type="text" class="login-field" value="" required placeholder="Gruppenname" name="name">
-                    </div>
-                    <div class="control-group">
-                        <a>Beschreibung</a><br>
-                        <input type="text" class="login-field" value="" required placeholder="Gruppenbeschreibung" name="description">
-                    </div>
-                    <div class="control-group">
-                        <a>Farbe</a><br>
-                        <input type="color" id="itemGroupColor" name="color" value="#c9110e" />
-                    </div>
-                    <div class="control-group">
-                        <a>Status*</a><br>
-                        <select id="state" name="state">
-                            <option value=0>Unklar</option>
-                            <option value=1>Aktiv</option>
-                            <option value=2>Inaktiv</option>
-                        </select>
-                    </div>
-                    <input type="submit" value="Create" class="btn btn-primary btn-large btn-block">
-                </div>
-            </form>
-        </div>
-
-        <div class='card-header'>
-            <h1>Gruppe bearbeiten</h1>
-        </div>
-        <div class='card-body'>
-            <form action="{{ url_for('sales.updateItemGroup') }}" method="POST">
+            <form action="{{ url_for('sales.updateItemGroup') }}" onsubmit="clearPage()" method="POST">
                 <div class="itemGroupForm">
                     <input type="hidden" id="updateGroupId" name="id" value="-1">
                     <div class="control-group">
@@ -128,8 +104,8 @@
                             <option value=1>Aktiv</option>
                             <option value=2>Inaktiv</option>
                         </select>
-                    </div>
-                    <input type="submit" value="Create" class="btn btn-primary btn-large btn-block">
+                    </div><br>
+                    <input type="submit" id="updateGroupSubmit" value="Create" class="btn btn-primary btn-large btn-block">
                 </div>
             </form>
         </div>
@@ -150,83 +126,103 @@
                         <th scope="col">Name</th>
                         <th scope="col">Beschreibung</th>
                         <th scope="col">Preis</th>
-                        <th scope="col">Gruppe</th>
                         <th scope="col">Bearbeitet von</th>
                         <th scope="col">Status</th>
                         <th scope="col"></th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for item in items %}
-                    <tr class="itemRow" id="{{item['id']}}">
-                        <td class="id">{{item['id']}}</td>
-                        <td class="name"><strong>{{item['name']}}</strong></td>
-                        <td class="description"><strong>{{item['description']}}</strong></td>
-                        <td class="price"><strong>{{'%0.2f'| format(item['price']|float)}} €</strong></td>
-                        <td class="groupId"><strong>{{item['groupId']}}</strong></td>
-                        <td class="changedBy"><strong>{{users[item['changedBy']|default(1, true)]['username']}}</strong></td>
-                        <td class="state">
-                            {% if item['state'] == 0 %}
-                                Unklar
-                            {% elif item['state'] == 1 %}
-                                Aktiv
-                            {% elif item['state'] == 2 %}
-                                Inaktiv
-                            {% else %}
-                                UNBEKANNT ({{item['state']}})
-                            {% endif %}
-                        </td>
+                    {% for group in itemGroups %}
+                    {% if group.items|length > 0 %}
+                    <td style="background-color: {{group['color']}};"></td>
+                    <td style="background-color: {{group['color']}};" class="name"><strong>{{group['name']}}</strong></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                        {% for item in group.items %}
+                        <tr class="itemRow" id="{{item['id']}}">
+                            <td class="id" style="background-color: {{group['color']}};">{{item['id']}}</td>
+                            <td class="name"><strong>{{item['name']}}</strong></td>
+                            <td class="description"><strong>{{item['description']}}</strong></td>
+                            <td class="price"><strong>{{'%0.2f'| format(item['price']|float)}} €</strong></td>
+                            <td class="changedBy"><strong>{{users[item['changedBy']|default(1, true)]['username']}}</strong></td>
+                            <td class="state">
+                                {% if item['state'] == 0 %}
+                                    Unklar
+                                {% elif item['state'] == 1 %}
+                                    Aktiv
+                                {% elif item['state'] == 2 %}
+                                    Inaktiv
+                                {% else %}
+                                    UNBEKANNT ({{item['state']}})
+                                {% endif %}
+                            </td>
+                            <td class="buttons">
+                                <button type="button" class="btn btn-warning" onClick="editItem({{item['id']}})">Edit</button>
+                                <button type="button" class="btn btn-danger" onClick="deleteItem({{item['id']}})">Delete</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% endif %}
+                    {% endfor %}
+
+
+                    <tr class="itemRow">
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
                         <td class="buttons">
-                            <button type="button" class="btn btn-warning" onClick="editItem({{item['id']}})">Edit</button>
-                            <button type="button" class="btn btn-danger" onClick="deleteItem({{item['id']}})">Delete</button>
+                            <button type="button" class="btn btn-success" onClick="addItem()">New</button>
                         </td>
                     </tr>
-                    {% endfor %}
                 </tbody>
             </table>
             </p>
         </div>
     </div>
-    <div class='card'>
+    <div class='card' id="itemEditDiv" style="visibility:collapse;">
         <div class='card-header'>
-            <h1>Artikel erstellen</h1>
+            <h1 id="itemEditTitel">Artikel erstellen</h1>
         </div>
         <div class="card-body">
             <div class="buttonGrid">
-                {% for n in range(2) %}
                     <div class="itemButton dark" >
                         <a><b class="testButtonName">Test Artikel</b></a><br>
                         <a><small class="testButtonDescription">Beschreibung</small></a><br>
                         <a class="testButtonPrice">12.34 €</a>
                     </div>
-                {% endfor %}
-                {% for n in range(2) %}
                     <div class="itemButton light">
                         <a><b class="testButtonName">Test Artikel</b></a><br>
                         <a><small class="testButtonDescription">Beschreibung</small></a><br>
                         <a class="testButtonPrice">12.34 €</a>
                     </div>
-                {% endfor %}
             </div><br>
         </div>
         <div class='card-body'>
-            <form action="{{ url_for('sales.addItem') }}" method="POST">
+            <form action="{{ url_for('sales.updateItem') }}" onsubmit="clearPage()" method="POST">
                 <div class="itemForm">
+                    <input type="hidden" id="updateItemId" name="id" value="0">
                     <div class="control-group">
                         <a>Name*</a><br>
-                        <input type="text" id="itemName"  class="login-field" value="" required placeholder="Artikelname" name="name">
+                        <input type="text" id="updateItemName"  class="login-field" value="" required placeholder="Artikelname" name="name">
                     </div>
                     <div class="control-group">
                         <a>Beschreibung</a><br>
-                        <input type="text" id="itemDescription" class="login-field" value="" required placeholder="Artikelbeschreibung" name="description">
+                        <input type="text" id="updateItemDescription" class="login-field" value="" required placeholder="Artikelbeschreibung" name="description">
                     </div>
                     <div class="control-group">
                         <a>Preis</a><br>
-                        <input type="number" id="itemPrice" name="price" value="0.00" step="0.01"/>
+                        <input type="number" id="updateItemPrice" name="price" value="0.00" step="0.01"/>
                     </div>
                     <div class="control-group">
                         <a>Gruppe</a><br>
-                        <select id="itemGroup" name="groupId">
+                        <select id="updateItemGroupId" name="groupId">
                             {% for group in itemGroups %}
                                 <option value={{group['id']}} style="background-color: {{group['color']}};">{{group['name']}}</option>
                             {% endfor %}
@@ -234,13 +230,13 @@
                     </div>
                     <div class="control-group">
                         <a>Status*</a><br>
-                        <select id="state" name="state">
+                        <select id="updateItemState" name="state">
                             <option value=0>Unklar</option>
                             <option value=1>Aktiv</option>
                             <option value=2>Inaktiv</option>
                         </select>
                     </div>
-                    <input type="submit" value="Create" class="btn btn-primary btn-large btn-block">
+                    <input type="submit" id="updateItemSubmit" value="Create" class="btn btn-primary btn-large btn-block">
                 </div>
             </form>
         </div>
@@ -250,10 +246,16 @@
 </div>
 
 <style>
+    a{
+        color: inherit; /* blue colors for links too */
+        text-decoration: inherit; /* no underline */
+    }
     .buttonGrid{
         display: grid;
-        grid-template-columns: 25% 25% 25% 25%;
-        width: 100%;
+        grid-template-columns: 50% 50%;
+        text-align: center;
+        align-content: center;
+        width: 50%;
     }
     .itemButton{
         border: 1px solid black;
@@ -304,17 +306,44 @@ function getItems(){
     });
 }
 
-function editGroup(id){
-    console.log("Edit Group: " + id);
-    let groupData = groupsData[id];
-    console.log(groupData);
-    
-    $("#updateGroupId").val(id);
-    $("#updateGroupState").val(groupData["state"]);
-    $("#updateGroupName").val(groupData["name"]);
-    $("#updateGroupDescription").val(groupData["description"]);
-    $("#updateGroupColor").val(groupData["color"]);
+function addGroup(){
+    $("#groupEditDiv").css('visibility', 'visible');
+    $("#groupEditTitel").text("Gruppe erstellen");
+    $("#updateGroupSubmit").val("Erstellen");
+
+
+    $("#updateGroupId").val(0);
+    $("#updateGroupName").val("");
+    $("#updateGroupDescription").val("");
+    $("#updateGroupColor").val("#00437d");
+    $("#updateGroupState").val(1);
+
+    $(".itemButton").css("background-color", "#00437d");
+    $('html, body').scrollTop($("#groupEditDiv").offset().top);
 }
+
+function editGroup(id){
+    let groupData = groupsData[id];
+    
+    $("#groupEditDiv").css('visibility', 'visible');
+    $("#groupEditTitel").text("Gruppe bearbeiten");
+    $("#updateGroupSubmit").val("Ändern");
+    
+    var name = groupData["name"];
+    var description = groupData["description"];
+    var color = groupData["color"];
+    var state = groupData["state"];
+
+    $("#updateGroupId").val(id);
+    $("#updateGroupName").val(name);
+    $("#updateGroupDescription").val(description);
+    $("#updateGroupColor").val(color);
+    $("#updateGroupState").val(state);
+    
+    $(".itemButton").css("background-color", color);
+    $('html, body').scrollTop($("#groupEditDiv").offset().top);
+}
+
 
 function deleteGroup(id){
     console.log("Delete Group: " + id);
@@ -322,10 +351,48 @@ function deleteGroup(id){
     console.log(groupsData[id]);
 }
 
+function addItem(){
+    $("#itemEditDiv").css('visibility', 'visible');
+    $("#itemEditTitel").text("Artikel erstellen");
+    $("#updateItemSubmit").val("Erstellen");
+
+
+    $("#updateItemId").val(0);
+    $("#updateItemName").val("");
+    $("#updateItemDescription").val("");
+    $("#updateItemPrice").val(0.00);
+    $("#updateItemGroupId").val(NaN);
+    $("#updateItemState").val(1);
+
+    $(".itemButton").css("background-color", "#00437d");
+    $('html, body').scrollTop($("#itemEditDiv").offset().top);
+}
+
 function editItem(id){
-    console.log("Edit Item: " + id);
-    console.log(itemsData);
-    console.log(itemsData[id]);
+    let itemData = itemsData[id];
+    
+    $("#itemEditDiv").css('visibility', 'visible');
+    $("#itemEditTitel").text("Artikel bearbeiten");
+    $("#updateItemSubmit").val("Ändern");
+    
+    var name = itemData["name"];
+    var description = itemData["description"];
+    var price = itemData["price"];
+    var groupId = itemData["groupId"];
+    var state = itemData["state"];
+    
+    let color = groupsData[groupId]["color"];
+    $(".itemButton").css("background-color", color);
+
+    console.log(itemData);
+    $("#updateItemId").val(id);
+    $("#updateItemName").val(name);
+    $("#updateItemDescription").val(description);
+    $("#updateItemPrice").val(price);
+    $("#updateItemGroupId").val(groupId);
+    $("#updateItemState").val(state);
+
+    $('html, body').scrollTop($("#itemEditDiv").offset().top);
 }
 
 function deleteItem(id){
@@ -334,30 +401,37 @@ function deleteItem(id){
     console.log(itemsData[id]);
 }
 
+// hide Forms
+function clearPage(){
+    $("#groupEditDiv").css('visibility', 'collapse');
+    $("#itemEditDiv").css('visibility', 'collapse');
+}
 
 // Preview Items
 $("input, select").change(function(){
     let p1 = $(this).parent().parent();
 
     if(p1.hasClass("itemForm")){
-        let name =  $("#itemName").val();
-        let description =  $("#itemDescription").val();
-        let price =  $("#itemPrice").val();
-        let group =  $("#itemGroup").val();
+        let name =  $("#updateItemName").val();
+        let description =  $("#updateItemDescription").val();
+        let price =  $("#updateItemPrice").val();
+        let group =  $("#updateItemGroupId").val();
+        let color = groupsData[group]["color"];
 
+        $(".itemButton").css("background-color", color);
         $(".testButtonName").text(name);
         $(".testButtonDescription").text(description);
         $(".testButtonPrice").text(Number(price).toFixed(2) + " €");
-        console.log(p1);
-        console.log(this);
+        console.debug(p1);
+        console.debug(this);
     }
     else if(p1.hasClass("itemGroupForm")){
-        let color = $("#itemGroupColor").val();
+        let color = $("#updateGroupColor").val();
         $(".itemButton").css("background-color", color);
 
-        console.log("itemGroupForm");
-        console.log(p1);
-        console.log(this);
+        console.debug("itemGroupForm");
+        console.debug(p1);
+        console.debug(this);
     }
 });
 </script>

@@ -8,7 +8,7 @@ class ItemGroup(db.Model):
   description = db.Column(db.VARCHAR(100), nullable=True)
   color = db.Column(db.VARCHAR(10), nullable=True)
   state = db.Column(db.Integer, server_default= "0")
-  items = db.Relationship('Item', backref='item')
+  items = db.Relationship('Item', backref='item', order_by='item.columns.name.asc()')
 
 class Item(db.Model):
   id = db.Column(db.Integer, primary_key=True)
