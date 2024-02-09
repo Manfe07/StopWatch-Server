@@ -44,8 +44,8 @@
                             {% endif %}
                         </td>
                         <td class="buttons">
-                            <button type="button" class="btn btn-warning" onClick="editGroup({{group['id']}})">Edit</button>
-                            <button type="button" class="btn btn-danger" onClick="deleteGroup({{group['id']}})">Delete</button>
+                            <button type="button" class="btn btn-warning" onClick="editTeam({{team['id']}})">Edit</button>
+                            <button type="button" class="btn btn-danger" onClick="deleteTeam({{team['id']}})">Delete</button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -57,7 +57,7 @@
                         <td></td>
                         <td></td>
                         <td class="buttons">
-                            <button type="button" class="btn btn-success" onClick="addGroup()">New</button>
+                            <button type="button" class="btn btn-success" onClick="addTeam()">New</button>
                         </td>
                     </tr>
                     
