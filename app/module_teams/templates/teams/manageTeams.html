@@ -43,8 +43,24 @@
                                 UNBEKANNT ({{team['state']}})
                             {% endif %}
                         </td>
+                        <td class="buttons">
+                            <button type="button" class="btn btn-warning" onClick="editGroup({{group['id']}})">Edit</button>
+                            <button type="button" class="btn btn-danger" onClick="deleteGroup({{group['id']}})">Delete</button>
+                        </td>
                     </tr>
                     {% endfor %}
+                    <tr class="team_row">
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td class="buttons">
+                            <button type="button" class="btn btn-success" onClick="addGroup()">New</button>
+                        </td>
+                    </tr>
+                    
                 </tbody>
             </table>
             </p>
