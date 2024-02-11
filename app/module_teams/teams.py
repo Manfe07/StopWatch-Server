@@ -47,6 +47,52 @@ def addteam():
     elif request.method == 'GET':
         return redirect(url_for('teams.overview'))
 
+@teams_Blueprint.route('/updateTeam', methods=['POST', 'GET'])
+def updateTeam():
+    if session.get('permission', 0) >= 2:
+        if request.method == 'POST':
+            form = request.form
+            id = int(form.get("id",0))
+            try:
+                if id != 0:
+                    team = Team.query.filter_by(id=id).first()(
+                        name = form.get("name_long",team.name),
+                        nameShort = form.get("name_short",team.nameShort),
+                        contact = form.get("contact",team.contact),
+                        phoneNumber = form.get("phone", team.phoneNumber),
+                        state = form.get("state", team.state)
+                        )
+                    
+                    print(newTeam)
+                    db.session.add(newTeam)
+                    db.session.commit()
+                else:
+                    newTeam = Team(
+                        name = form["name_long"],
+                        nameShort = form.get("name_short",None),
+                        contact = form.get("contact",None),
+                        phoneNumber = form.get("phone", None),
+                        state = form.get("state", 1)
+                        )
+                    
+                    print(newTeam)
+                    db.session.add(newTeam)
+                    db.session.commit()
+                
+                return redirect(url_for('sales.overview'))
+
+
+            except Exception as e:
+                print(e)
+                flash("Error updating itemGroup " + form["name"] )
+            return redirect(url_for('sales.overview'))
+            
+        elif request.method == 'GET':
+            return redirect(url_for('sales.overview'))
+    else:
+        return redirect(url_for('index'))
+
+
 
 def getTeamById(id):
     try:
