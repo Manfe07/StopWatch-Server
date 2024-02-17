@@ -18,34 +18,21 @@ def overview():
     return render_template('teams/manageTeams.html', teams=teams)
 
 
-@teams_Blueprint.route('/addteam', methods=['POST', 'GET'])
-def addteam():
+@teams_Blueprint.route('/deleteTeam', methods=['POST'])
+def deleteTeam():
     if request.method == 'POST':
-        form = request.form
-        #ToDo: change to new format
- 
         try:
-            newTeam = Team(
-            name = form["name_long"],
-            nameShort = form.get("name_short",None),
-            contact = form.get("contact",None),
-            phoneNumber = form.get("phone", None),
-            state = form.get("state", 1)
-            )
-            print(newTeam)
-            db.session.add(newTeam)
+            data = request.json
+            id=data.get("id")
+            team = Team.query.get(id)
+            db.session.delete(team)
             db.session.commit()
-
-            return redirect(url_for('teams.overview'))
-
-
+            return {'delteded' : id}
         except Exception as e:
-            print(e)
-            flash("Error creating team " + form["name_long"] )
-            return redirect(url_for('teams.overview'))
-        
-    elif request.method == 'GET':
-        return redirect(url_for('teams.overview'))
+            return {'error': e}
+
+    else:
+        return {'error': 0}
 
 @teams_Blueprint.route('/updateTeam', methods=['POST', 'GET'])
 def updateTeam():
@@ -55,16 +42,13 @@ def updateTeam():
             id = int(form.get("id",0))
             try:
                 if id != 0:
-                    team = Team.query.filter_by(id=id).first()(
-                        name = form.get("name_long",team.name),
-                        nameShort = form.get("name_short",team.nameShort),
-                        contact = form.get("contact",team.contact),
-                        phoneNumber = form.get("phone", team.phoneNumber),
-                        state = form.get("state", team.state)
-                        )
-                    
-                    print(newTeam)
-                    db.session.add(newTeam)
+                    team = Team.query.filter_by(id=id).first()
+                    team.name = form.get("name_long","")
+                    team.nameShort = form.get("name_short","")
+                    team.contact = form.get("contact","")
+                    team.phoneNumber = form.get("phone", "")
+                    team.state = form.get("state", "")
+
                     db.session.commit()
                 else:
                     newTeam = Team(
@@ -74,25 +58,43 @@ def updateTeam():
                         phoneNumber = form.get("phone", None),
                         state = form.get("state", 1)
                         )
-                    
-                    print(newTeam)
                     db.session.add(newTeam)
                     db.session.commit()
                 
-                return redirect(url_for('sales.overview'))
+                return redirect(url_for('teams.overview'))
 
 
             except Exception as e:
                 print(e)
-                flash("Error updating itemGroup " + form["name"] )
-            return redirect(url_for('sales.overview'))
+                flash("Error updating team " + form["name_long"] )
+            return redirect(url_for('teams.overview'))
             
         elif request.method == 'GET':
-            return redirect(url_for('sales.overview'))
+            return redirect(url_for('teams.overview'))
     else:
         return redirect(url_for('index'))
 
 
+@teams_Blueprint.route('/getTeams', methods=['GET'])
+def getTeams():    
+    if session.get('permission', 0) >= 1:
+
+        teams = db.session.query(Team)
+        data = {}
+        for team in teams:
+            data[team.id] = {
+                "id" : team.id,
+                "name" : team.name,
+                "nameShort" : team.nameShort,
+                "contact" : team.contact,
+                "state" : team.state,
+                "phone" : team.phoneNumber,
+                "created_at" : team.created_at,
+            }
+        return jsonify(data)
+    else:
+        return None
+    
 
 def getTeamById(id):
     try:
