@@ -1,16 +1,11 @@
 from flask import Blueprint, render_template, Flask, request, jsonify, redirect, url_for, session, flash
-import module_teams.datahandler as dh
-from module_teams.datahandler import db, Team
 
-
-teams_Blueprint = Blueprint('teams', __name__,  template_folder='templates')
-
-def init():
-    dh.init()
+from . import teams_Blueprint
+from .models import db, Team
 
 @teams_Blueprint.route('/', methods=['GET'])
 def overview():
-    teams = dh.getTeams()
+    teams = Team.query.all()
     #teams = datahandler.db.session.query(datahandler.Team)
     #result = {}
     #for r in query:
@@ -94,12 +89,3 @@ def getTeams():
         return jsonify(data)
     else:
         return None
-    
-
-def getTeamById(id):
-    try:
-        query = db.session.query(Team).where(Team.id == id)[0]
-        return query.getDict()
-    except Exception as e:
-        print(e)
-        return {"error":-3}   
