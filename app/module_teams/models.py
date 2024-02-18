@@ -9,7 +9,7 @@ class TeamGroup(db.Model):
   description = db.Column(db.VARCHAR(100), nullable=True)
   color = db.Column(db.VARCHAR(10), nullable=True)
   state = db.Column(db.Integer, server_default= "0")
-  items = db.Relationship('Team', backref='team', order_by='team.columns.name.asc()')
+  teams = db.Relationship('Team', backref='team', order_by='team.columns.name.asc()')
 
 
 class Team(db.Model):
