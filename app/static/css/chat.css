@@ -1,0 +1,56 @@
+.chatDiv {
+    display: flex;
+    display: none;
+    position: absolute;
+    top: 5%;
+    bottom: 5%;
+    left: 5%;
+    right: 5%;
+    padding: 5px;
+    border: 5px solid gray;
+    border-radius: 5px;
+    background-color: white;
+    z-index: 1002;
+    font-size: medium;
+  }
+
+  .chatMessages {
+    color: #000;
+    overflow-y: scroll;
+    flex: 1;
+  }
+
+  .chatMessages p {
+    line-height: normal;
+    margin-bottom: 0px;
+  }
+
+  .chatMessages .textSelf {
+    color: blue;
+  }
+
+  .chatMessages .textOther {
+    color: darkred;
+  }
+
+
+  .chatFooter {
+    position: absolute;
+    align-items: stretch;
+    justify-items: stretch;
+    display: flex;
+    left: 1%;
+    right: 1%;
+    bottom: 1%;
+    flex: 0 1 40px;
+  }
+
+  .chatFooter input {
+    float: left;
+    display: flex;
+    flex: 1;
+  }
+
+  .chatFooter button {
+    float: right;
+  }
