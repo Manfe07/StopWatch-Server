@@ -3,7 +3,6 @@ from flask_socketio import SocketIO, send, emit
 from flask_migrate import Migrate
 from tools import * 
 
-import module_teams.teams as teams
 import module_users.users as users
 import module_sales.sales as sales
 
@@ -35,7 +34,9 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = config['Flask']['SECRET_KEY']
 socketio = SocketIO(app, cors_allowed_origins='*')
 
-app.register_blueprint(teams.teams_Blueprint, url_prefix="/teams")
+from module_teams import teams_Blueprint
+app.register_blueprint(teams_Blueprint, url_prefix="/teams")
+
 app.register_blueprint(users.users_Blueprint, url_prefix="/users")
 app.register_blueprint(sales.sales_Blueprint, url_prefix="/sales")
 
@@ -48,7 +49,6 @@ migrate = Migrate(app, db)
 with app.app_context():
     db.init_app(app)
     db.create_all()
-    teams.init()
     users.init()
     sales.init()
     db.session.commit()
