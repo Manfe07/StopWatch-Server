@@ -1,0 +1,13 @@
+venv
+__pycache__
+static/output
+output
+config.yaml
+.vscode/settings.json
+logs/app.log
+logs/log.txt
+docker-compose.yml
+.env/
+*.db
+logs/
+app/config.ini
