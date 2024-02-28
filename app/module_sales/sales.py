@@ -1,5 +1,4 @@
 from flask import Blueprint, render_template, Flask, request, jsonify, redirect, url_for, session, flash
-import module_teams.datahandler as dh
 from module_sales.models import db, Item, ItemGroup
 from module_users.datahandler import User
 from module_users.users import getSessionUser
