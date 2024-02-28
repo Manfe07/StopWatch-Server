@@ -131,7 +131,7 @@ def updateItem():
 
 @sales_Blueprint.route('/getGroups', methods=['GET'])
 def getGroups():    
-    if session.get('permission', 0) >= 1:
+    if session.get('permission', 0) >= 0:
 
         itemGroups = db.session.query(ItemGroup)
 
@@ -157,14 +157,15 @@ def getGroups():
                 "state" : group.state,
                 "items" : itemData,
             }
-
-        return jsonify(groupData)
+        response = jsonify(groupData)
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        return response
     else:
         return None
 
 @sales_Blueprint.route('/getItems', methods=['GET'])
 def getItems():    
-    if session.get('permission', 0) >= 1:
+    if session.get('permission', 0) >= 0:
 
         items = db.session.query(Item)
 
@@ -179,7 +180,9 @@ def getItems():
                 "groupId" : item.groupId,
                 "changedBy" : item.changedBy,
             }
-        return jsonify(data)
+        response = jsonify(data)
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        return response
     else:
         return None
 
