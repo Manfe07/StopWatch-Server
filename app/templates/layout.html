@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="de" data-bs-theme="dark">
+<html lang="de" data-bs-theme="light">
 <head>
-    <link rel="icon" type="image/svg+xml" href="/static/images/favicon.svg">
-    <link rel="icon" type="image/png" href="/assets/images/favicon.png">
+    <link rel="icon" type="image/svg+xml" href="/static/images/beer.svg">
+    <!--<link rel="icon" type="image/png" href="/assets/images/favicon.png">-->
     <meta charset='UTF-8'>
-    <title>{% block title %}Stopwatch{% endblock %}</title>
+    <title>{% block title %}Biermeter{% endblock %}</title>
   
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light">  
@@ -25,8 +25,8 @@
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">
-                <img src="/static/images/logo.svg" width="30" height="30" class="d-inline-block align-top" alt="">
-                Stoppuhr
+                <img src="/static/images/beer.svg" width="30" height="30" class="d-inline-block align-top" style="color:var(--bs-secondary)" alt="">
+                Biermeter
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -50,7 +50,7 @@
                     {% endif %}
                     {% if session['permission']|default(0, true) >= 1 %}
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a class="nav-link dropdown-toggle" href="/" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Steuerungen
                         </a>
                         <ul class="dropdown-menu">

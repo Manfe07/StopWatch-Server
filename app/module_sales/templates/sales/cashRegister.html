@@ -1,15 +1,22 @@
 {% extends "layout.html" %}
 
-{% block title %}Kasse{% endblock %}
+{% block title %}Kasse 🛒🍺{% endblock %}
 
 {% block content %}
+
+<audio id="cash_sound" preload="auto"><source src="/static/sounds/cash.mp3" /></audio>
+<audio id="click_sound" preload="auto"><source src="/static/sounds/click.wav" /></audio>
 
 <div class='container'>
 {% for group in itemGroups %}
     <h2>{{ group.name }}</h2>
     <div class="buttonGrid">
         {% for item in group.items %}
-            <div class="itemButton itemGroup_{{group.id}}" style="background-color: {{ group.color }};">
+            <div
+                class="itemButton itemGroup_{{group.id}}"
+                style="background-color: {{ group.color }};"
+                onclick="addItem({{item.id}}, '{{item.name}}', {{item.price}}, 1)"
+                >
                 <a><b>{{item.name}}</b></a><br>
                 <a><small>{{item.description}}</small></a><br>
                 <a>{{'%0.2f'| format(item['price']|float)}} €</a>
@@ -20,6 +27,17 @@
 {% endfor %}
 </div>
 
+<div class='container'>
+    <!--<table id="bill" style="font-size: larger; border: black solid; table-layout: auto;"></table>-->
+    <div class="bill">
+        <table id="bill"></table>
+    </div>
+    <div style="margin: 20px; visibility: hidden" id="check-out">
+        <button type="button" class="btn btn-danger" onclick="submitBill(false)"><b>Team-Konto<br>TEAMNAME</b></button>
+        <button type="button" class="btn btn-warning" onclick="submitBill(true)"><b>Bar<br>EC</b></button><br><br>
+        <button type="button" class="btn btn-secondary" onclick="location = '/'"><b>Bestellung<br>Abbrechen</b></button>
+    </div>
+</div>
 <style>
     .buttonGrid{
         display: grid;
@@ -38,8 +56,116 @@
         transition: filter 0s;
     }
 
+    @font-face {
+        font-family: 'FakeReceipt';
+        src: url("/static/fonts/fake receipt.otf") format("opentype");
+    }
+    @font-face {
+        font-family: 'Tangerine';
+        font-style: normal;
+        font-weight: normal;
+        src: local('Tangerine'), url('http://example.com/tangerine.ttf') format('truetype');
+    }
+    .bill{
+        font-family: 'FakeReceipt';
+        background-color: white;
+        border: solid 1px;
+        padding: 10px;
+        margin-top: 10px;  
+        width: fit-content;  
+        color: rgba(0,0,0,0.65);
+    }
+
+    .columnAmount{
+        text-align: right;
+    }
+
+    .columnTotal{
+        text-align: right;
+    }
+    
+    .columnSum{
+        text-align: right;
+    }
+
 </style>
+
 <script>
- 
+
+let basket = {};
+
+function addItem(id, name, price, amount){
+    if (name in basket){
+        basket[name].amount += amount;
+        basket[name].sum += (price * amount);
+    }
+    else{
+        basket[name]={
+            'name' : name,
+            'amount' : (amount),
+            'sum' : (price * amount),
+            'id' : id
+        };
+    }
+    try {
+        document.getElementById('click_sound').currentTime=0;
+        document.getElementById('click_sound').play();
+    } catch (error) {
+        console.error(error);
+    }
+    try {
+        navigator.vibrate(200); // vibrate for 200ms
+    } catch (error) {
+        console.error(error);
+    }
+    updateBill(basket)
+    console.log(basket)
+}
+
+function updateBill(basket){
+    let tableRef = document.getElementById("bill");
+    tableRef.innerHTML = "";
+    total = 0;
+    for(item in basket){
+        let newRow = tableRef.insertRow(-1);
+        let amountCell = newRow.insertCell(0);
+        let nameCell = newRow.insertCell(1);
+        let sumCell = newRow.insertCell(2);
+        amountCell.setAttribute('class', 'columnAmount')
+        nameCell.setAttribute('class', 'columnName')
+        sumCell.setAttribute('class', 'columnSum')
+        nameCell.innerHTML = basket[item]['name'];
+        amountCell.innerHTML = basket[item]['amount'] + "&nbsp";
+        sumCell.innerHTML = basket[item]['sum'].toFixed(2) + "€";
+        total += basket[item]['sum'];
+    }
+
+    // Sum Block Space
+    {
+        let spacerRow = tableRef.insertRow(-1);
+        let amountCell = spacerRow.insertCell(0);
+        let nameCell = spacerRow.insertCell(1);
+        let sumCell = spacerRow.insertCell(2);
+        sumCell.innerHTML = "<b>-------</b>";
+    }
+
+    // Sum Block
+    let sumRow = tableRef.insertRow(-1);
+    let amountCell = sumRow.insertCell(0);
+    let nameCell = sumRow.insertCell(1);
+    let sumCell = sumRow.insertCell(2);
+    amountCell.setAttribute('class', 'columnAmount')
+    nameCell.setAttribute('class', 'columnName')
+    sumCell.setAttribute('class', 'columnTotal')
+    nameCell.innerHTML = "<b>Total</b>";
+    amountCell.innerHTML = "";
+    sumCell.innerHTML = "<b>" + total.toFixed(2) + "€</b>";
+
+    document.getElementById("check-out").style.visibility = "visible";
+}
+
+function submitBill(payment){
+    console.log(payment);
+}
 </script>
 {% endblock %}

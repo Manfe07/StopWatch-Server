@@ -131,7 +131,7 @@ def updateItem():
 @sales_Blueprint.route('/getGroups', methods=['GET'])
 def getGroups():    
     if session.get('permission', 0) >= 0:
-
+    
         itemGroups = db.session.query(ItemGroup)
 
         groupData = {}

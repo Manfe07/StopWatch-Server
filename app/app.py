@@ -44,7 +44,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = config['Flask']['SQLALCHEMY_DATABASE_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['DEBUG'] = True
 
-migrate = Migrate(app, db)
 
 with app.app_context():
     db.init_app(app)
@@ -53,6 +52,8 @@ with app.app_context():
     sales.init()
     db.session.commit()
 
+    MIGRATION_DIR = os.path.join('data', 'migrations')  
+    migrate = Migrate(app, db, directory=MIGRATION_DIR)
 
 @app.route('/',methods = ['GET'])
 def index():
