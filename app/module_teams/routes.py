@@ -40,10 +40,11 @@ def updateTeam():
                 if id != 0:
                     team = Team.query.filter_by(id=id).first()
                     team.name = form.get("name_long","")
-                    team.nameShort = form.get("name_short","")
-                    team.contact = form.get("contact","")
-                    team.phoneNumber = form.get("phone", "")
-                    team.state = form.get("state", "")
+                    team.nameShort = form.get("name_short",None)
+                    team.contact = form.get("contact",None)
+                    team.phoneNumber = form.get("phone", None)
+                    team.state = form.get("state", None)
+                    groupId = form.get("groupId",0)
 
                     db.session.commit()
                 else:
@@ -52,7 +53,8 @@ def updateTeam():
                         nameShort = form.get("name_short",None),
                         contact = form.get("contact",None),
                         phoneNumber = form.get("phone", None),
-                        state = form.get("state", 1)
+                        state = form.get("state", 1),
+                        groupId = form.get("groupId",0)
                         )
                     db.session.add(newTeam)
                     db.session.commit()
@@ -141,7 +143,43 @@ def getTeams():
                 "state" : team.state,
                 "phone" : team.phoneNumber,
                 "created_at" : team.created_at,
+             #   "group_id" : team.groupId
             }
         return jsonify(data)
+    else:
+        return None
+
+@teams_Blueprint.route('/getGroups', methods=['GET'])
+def getGroups():    
+    if session.get('permission', 0) >= 0:
+    
+        teamGroups = db.session.query(TeamGroup)
+
+        groupData = {}
+        for group in teamGroups:
+            teamData = []
+            for team in group.teams:
+                teamData.append(
+                    {
+                        "id" : team.id,
+                        "name" : team.name,
+                        "nameShort" : team.nameShort,
+                        "contact" : team.contact,
+                        "state" : team.state,
+                        "phone" : team.phoneNumber,
+                        "created_at" : team.created_at,
+                    }
+            )
+            groupData[group.id] = {
+                "id" : group.id,
+                "name" : group.name,
+                "description" : group.description,
+                "color" : group.color,
+                "state" : group.state,
+                "teams" : teamData,
+            }
+        response = jsonify(groupData)
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        return response
     else:
         return None
