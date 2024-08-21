@@ -143,7 +143,7 @@ def getTeams():
                 "state" : team.state,
                 "phone" : team.phoneNumber,
                 "created_at" : team.created_at,
-             #   "group_id" : team.groupId
+                "group_id" : team.groupId
             }
         return jsonify(data)
     else:
