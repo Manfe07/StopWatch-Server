@@ -1,4 +1,5 @@
 from flask import Flask, send_file, render_template, redirect
+from prometheus_flask_exporter import PrometheusMetrics
 from flask_socketio import SocketIO, send, emit
 from flask_migrate import Migrate
 from tools import * 
@@ -30,6 +31,9 @@ logger.addHandler(fh)
 
 
 app = Flask(__name__) 
+
+metrics = PrometheusMetrics(app)
+metrics.info('app_info', 'Application info', version='1.0.3')
 
 app.config['SECRET_KEY'] = config['Flask']['SECRET_KEY']
 socketio = SocketIO(app, cors_allowed_origins='*')

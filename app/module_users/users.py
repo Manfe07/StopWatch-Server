@@ -5,7 +5,9 @@ import module_users.datahandler as datahandler
 
 users_Blueprint = Blueprint('users', __name__,  template_folder='templates')
 
-
+# 1: Kellner
+# 2: Verwaltung
+# 3: Admin
 
 def init():
     datahandler.init()

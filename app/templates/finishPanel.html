@@ -6,54 +6,48 @@
 {% endblock %}
 
 {% block content%}
-<div class="subHeader">
-  <div id="toggleChat" class="headerItem">Chat</div>
-</div>
-<div class="subContent">
-  <div id="chatWindow" class="chatDiv">
-    <div class="chatMessages"></div>
-    <div class="chatFooter">
-      <input type="text" id="messageInput" name="messageInput">
-      <button id="sendMessage" class="btn btn-info">Send</button>
+<div class='container'>
+  <div class="subContent">
+
+    <div id="stateConnection">Verbindung: </div>
+    <div id="target">Input: </div>
+    <div id="stateStopwatch">Status: </div>
+    <div id="time">Zeiten</div>
+    <div id="raceSettings">
+      <input type="number" id="activeLanesInput" min="1" max="4" />
     </div>
-  </div>
+    <div id="controls">Steuerungen
+      <button>Buttons will be generated with javscript</button>
+    </div>
+    <div class="camera">
+      <video id="video">Video stream not available.</video>
+      <button id="startbutton" hidden="true">Take photo</button>
+    </div>
+    <canvas id="canvas" style="display: none"> </canvas>
+    <div class="photoFinish">
+      <img id="photoLane0" />
+      <img id="photoLane1" />
+      <img id="photoLane2" />
+      <img id="photoLane3" />
+    </div>
 
 
-  <div id="stateConnection">Verbindung: </div>
-  <div id="target">Input: </div>
-  <div id="stateStopwatch">Status: </div>
-  <div id="time">Zeiten</div>
-  <div id="raceSettings">
-    <input type="number" id="activeLanesInput" min="1" max="4" />
+    <a>Debug:</a>
+    <div id="debugDiv"></div>
   </div>
-  <div id="controls">Steuerungen
-    <button>Buttons will be generated with javscript</button>
-  </div>
-  <div class="camera">
-    <video id="video">Video stream not available.</video>
-    <button id="startbutton">Take photo</button>
-  </div>
-  <canvas id="canvas" style="display: none"> </canvas>
-  <div class="photoFinish">
-    <img id="photoLane0" />
-    <img id="photoLane1" />
-    <img id="photoLane2" />
-    <img id="photoLane3" />
-  </div>
-
-  <a>Debug:</a>
-  <div id="debugDiv"></div>
-
 </div>
-
 {% endblock %}
 
 {% block script %}
 <script type="module">
   import { socket, watchDog, wsData } from "/static/scripts/socket.js";
   import { stopwatch } from "/static/scripts/stopwatch.js";
-  import "/static/scripts/chat.js";
+  //import "/static/scripts/chat.js";
   import { finishCam } from "/static/scripts/camera.js";
+
+  const armButton = 'R';
+  const startButton = 'S';
+  const LaneButton = ['A', 'G', 'L', '4'];
 
   wsData.device = "finish";
   watchDog.pingInterval = 1000;
@@ -82,7 +76,7 @@
     let start = new Date();
     console.log("Photo Started:", start);
 
-    if(finishCam.takePicture(lane)){
+    if (finishCam.takePicture(lane)) {
       let target = "#photoLane" + lane;
       $(target).attr('src', finishCam.photos[lane]);
       let now = new Date();
@@ -108,41 +102,45 @@
     if (!($("#messageInput").is(":focus"))) {
       switch (keyPressed) {
         case '1':
+        case LaneButton[0]:
+        case LaneButton[0].toLowerCase():
           if (stopwatch.data.running) {
             stopwatch.stopLane(0);
           }
-          else {
-            stopwatch.start();
-          }
           break;
+
         case '2':
+        case LaneButton[1]:
+        case LaneButton[1].toLowerCase():
           if (stopwatch.data.running) {
             stopwatch.stopLane(1);
           }
-          else {
-            stopwatch.start();
-          }
           break;
-        case '3':
 
+        case '3':
+        case LaneButton[2]:
+        case LaneButton[2].toLowerCase():
           if (stopwatch.data.running) {
             stopwatch.stopLane(2);
           }
-          else {
-            stopwatch.start();
-          }
           break;
-        case '4':
 
+        case '4':
+        case LaneButton[3]:
+        case LaneButton[3].toLowerCase():
           if (stopwatch.data.running) {
             stopwatch.stopLane(3);
           }
-          else {
-            stopwatch.start();
-          }
           break;
-        case '5':
+
+        case armButton:
+        case armButton.toLowerCase():
           stopwatch.toggleArm();
+          break;
+
+        case startButton:
+        case startButton.toLowerCase():
+          stopwatch.start();
           break;
 
         default:
@@ -168,13 +166,16 @@
       let timeText = `${String(seconds).padStart(2, '0')}.${String((Math.round((milliseconds % 999) / 10))).padStart(2, '0')}`;
 
       var row = $("<tr>");
-      let laneColumn = $('<td>').addClass('laneCell').html("Bahn " + (i + 1) + ":&nbsp;");
-      let timeColumn = $('<td>').addClass('timeCell').text(timeText);
+      let laneColumn = $('<td><label>').addClass('laneCell').html("Bahn " + (i + 1) + ":&nbsp;");
+      let timeColumn = $('<td><input>').addClass('timeCell').text(timeText);
       row.append(laneColumn);
       row.append(timeColumn);
       table.append(row);
     }
+    var tableTitle = $('<h2>');
+    tableTitle.text("Zeiten");
     $('#time').html("");
+    $('#time').append(tableTitle);
     $('#time').append(table);
   }
 
@@ -195,10 +196,10 @@
       var button = $('<button>').addClass('controlButton arm');
 
       if (stopwatch.data.armed) {
-        button.text("Scharf");
+        button.text("Scharf (" + armButton + ")");
       }
       else {
-        button.text("Unscharf");
+        button.text("Unscharf (" + armButton + ")");
       }
 
       if (stopwatch.data.running) {
@@ -218,7 +219,7 @@
     // START button
     if (true) {
       var button = $('<button>').addClass('controlButton start');
-      button.text("Start");
+      button.text("Start (" + startButton + ")");
       if (stopwatch.data.armed & !stopwatch.data.running) {
         button.addClass('btn btn-warning');
       }
@@ -247,7 +248,7 @@
         }
         else if (!stopwatch.data.laneFinished[i]) {
           button.addClass('btn btn-warning');
-          button.html("Stop<br>Bahn " + (i + 1));
+          button.html("Stop<br>Bahn " + (i + 1) + " (" + LaneButton[i] + ")");
         }
         else {
           button.addClass('btn btn-success');
@@ -296,6 +297,11 @@
 
 {% block style %}
 <style>
+  #time {
+    align-content: center;
+  }
+
+
   .photoFinish img {
     width: 30%;
     max-height: 700px;

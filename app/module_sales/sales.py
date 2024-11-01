@@ -2,6 +2,9 @@ from flask import Blueprint, render_template, Flask, request, jsonify, redirect,
 from module_sales.models import db, Item, ItemGroup
 from module_users.datahandler import User
 from module_users.users import getSessionUser
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 sales_Blueprint = Blueprint('sales', __name__, template_folder='templates')
@@ -162,6 +165,16 @@ def getGroups():
     else:
         return None
 
+@sales_Blueprint.route('/createOrder', methods=['POST'])
+def createOrder():    
+    if session.get('permission', 1) >= 0:
+        order = request.json
+        logger.debug(order)
+        return {'success': True }
+    else:
+        return None
+
+
 @sales_Blueprint.route('/getItems', methods=['GET'])
 def getItems():    
     if session.get('permission', 0) >= 0:
@@ -184,6 +197,7 @@ def getItems():
         return response
     else:
         return None
+
 
 @sales_Blueprint.route('/cashRegister', methods=['GET'])
 def cashRegister():

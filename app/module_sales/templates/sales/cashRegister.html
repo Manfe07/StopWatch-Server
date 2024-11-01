@@ -4,53 +4,99 @@
 
 {% block content %}
 
-<audio id="cash_sound" preload="auto"><source src="/static/sounds/cash.mp3" /></audio>
-<audio id="click_sound" preload="auto"><source src="/static/sounds/click.wav" /></audio>
+<audio id="cash_sound" preload="auto">
+    <source src="/static/sounds/cash.mp3" />
+</audio>
+<audio id="click_sound" preload="auto">
+    <source src="/static/sounds/click.wav" />
+</audio>
 
-<div class='container'>
-{% for group in itemGroups %}
-    <h2>{{ group.name }}</h2>
-    <div class="buttonGrid">
-        {% for item in group.items %}
-            <div
-                class="itemButton itemGroup_{{group.id}}"
-                style="background-color: {{ group.color }};"
-                onclick="addItem({{item.id}}, '{{item.name}}', {{item.price}}, 1)"
-                >
-                <a><b>{{item.name}}</b></a><br>
-                <a><small>{{item.description}}</small></a><br>
-                <a>{{'%0.2f'| format(item['price']|float)}} €</a>
+<div class='card' id="teamSelectDiv" style="visibility:visible;">
+    <div class='card-header'>
+        <h1 id="teamSelectTitel">Team wählen</h1>
+    </div>
+    <div class='card-body'>
+        <div class='container'>
+            <div id="teamSelectArea">
+
 
             </div>
-        {% endfor %}
+        </div>
     </div>
-{% endfor %}
 </div>
 
-<div class='container'>
-    <!--<table id="bill" style="font-size: larger; border: black solid; table-layout: auto;"></table>-->
-    <div class="bill">
-        <table id="bill"></table>
+<div class='card' id="itemSelectDiv" style="visibility:hidden;">
+    <div class='card-header'>
+        <h1 id="itemSelectTitel">🛒Team Name🛒</h1>
     </div>
-    <div style="margin: 20px; visibility: hidden" id="check-out">
-        <button type="button" class="btn btn-danger" onclick="submitBill(false)"><b>Team-Konto<br>TEAMNAME</b></button>
-        <button type="button" class="btn btn-warning" onclick="submitBill(true)"><b>Bar<br>EC</b></button><br><br>
-        <button type="button" class="btn btn-secondary" onclick="location = '/'"><b>Bestellung<br>Abbrechen</b></button>
+    <div class='card-body'>
+        <div class='container'>
+            {% for group in itemGroups %}
+            {% if group.state == 1 and group.items|length > 0 %}
+            <h2>{{ group.name }}</h2>
+            <div class="buttonGrid">
+                {% for item in group.items %}
+                {% if item.state == 1 %}
+                <div class="itemButton itemGroup_{{group.id}}" style="background-color: {{ group.color }};"
+                    onclick="addItem({{item.id}}, {{group.id}}, '{{item.name}}', {{item.price}}, 1)">
+                    <a><b>{{item.name}}</b></a><br>
+                    <a><small>{{item.description}}</small></a><br>
+                    <a>{{'%0.2f'| format(item['price']|float)}} €</a>
+
+                </div>
+                {% endif %}
+                {% endfor %}
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+    <div class='card-body'>
+        <div class='container'>
+            <!--<table id="bill" style="font-size: larger; border: black solid; table-layout: auto;"></table>-->
+            <div id="billDiv" class="bill">
+                <table id="bill"></table>
+            </div>
+            <div style="margin: 20px; visibility: collapse" id="check-out">
+                <button type="button" class="btn btn-danger"
+                    onclick="submitBill('account')"><b>Team-Konto<br>TEAMNAME</b></button>
+                <button type="button" class="btn btn-warning"
+                    onclick="submitBill('cash')"><b>Bar<br>EC</b></button><br><br>
+                <button type="button" class="btn btn-secondary"
+                    onclick="resetRegister()"><b>Bestellung<br>Abbrechen</b></button>
+            </div>
+        </div>
     </div>
 </div>
+
+
 <style>
-    .buttonGrid{
+    .buttonGrid {
         display: grid;
         grid-template-columns: 25% 25% 25% 25%;
+        -webkit-user-select: none; /* Safari */
+        -ms-user-select: none; /* IE 10 and IE 11 */
+        user-select: none; /* Standard syntax */
     }
-    .itemButton{
+
+    .teamButton {
+        border: 1px solid black;
+        text-align: center;
+        align-content: center;
+        cursor: pointer;
+        transition: filter 0.3s ease 0.3s;
+        min-height: 50px;
+    }
+
+    .itemButton {
         border: 1px solid black;
         text-align: center;
         align-content: center;
         cursor: pointer;
         transition: filter 0.3s ease 0.3s;
     }
-    
+
     .itemButton.clicked {
         filter: drop-shadow(0px 0px 0px steelblue);
         transition: filter 0s;
@@ -60,112 +106,328 @@
         font-family: 'FakeReceipt';
         src: url("/static/fonts/fake receipt.otf") format("opentype");
     }
-    @font-face {
-        font-family: 'Tangerine';
-        font-style: normal;
-        font-weight: normal;
-        src: local('Tangerine'), url('http://example.com/tangerine.ttf') format('truetype');
-    }
-    .bill{
+
+    .bill {
         font-family: 'FakeReceipt';
         background-color: white;
         border: solid 1px;
         padding: 10px;
-        margin-top: 10px;  
-        width: fit-content;  
-        color: rgba(0,0,0,0.65);
+        margin-top: 10px;
+        width: fit-content;
+        color: rgba(0, 0, 0, 0.7);
     }
 
-    .columnAmount{
+    .billColumnTeam {
+        padding-top: 10px;
+        padding-bottom: 10px;
+        text-align: center;
+    }
+
+    .billColumnAmount {
         text-align: right;
     }
 
-    .columnTotal{
-        text-align: right;
-    }
-    
-    .columnSum{
+    .billColumnTotal {
         text-align: right;
     }
 
+    .billColumnSum {
+        text-align: right;
+    }
 </style>
 
 <script>
 
-let basket = {};
+    teamGroupsData = {};
+    itemGroupsData = {};
 
-function addItem(id, name, price, amount){
-    if (name in basket){
-        basket[name].amount += amount;
-        basket[name].sum += (price * amount);
-    }
-    else{
-        basket[name]={
-            'name' : name,
-            'amount' : (amount),
-            'sum' : (price * amount),
-            'id' : id
-        };
-    }
-    try {
-        document.getElementById('click_sound').currentTime=0;
-        document.getElementById('click_sound').play();
-    } catch (error) {
-        console.error(error);
-    }
-    try {
-        navigator.vibrate(200); // vibrate for 200ms
-    } catch (error) {
-        console.error(error);
-    }
-    updateBill(basket)
-    console.log(basket)
-}
-
-function updateBill(basket){
-    let tableRef = document.getElementById("bill");
-    tableRef.innerHTML = "";
-    total = 0;
-    for(item in basket){
-        let newRow = tableRef.insertRow(-1);
-        let amountCell = newRow.insertCell(0);
-        let nameCell = newRow.insertCell(1);
-        let sumCell = newRow.insertCell(2);
-        amountCell.setAttribute('class', 'columnAmount')
-        nameCell.setAttribute('class', 'columnName')
-        sumCell.setAttribute('class', 'columnSum')
-        nameCell.innerHTML = basket[item]['name'];
-        amountCell.innerHTML = basket[item]['amount'] + "&nbsp";
-        sumCell.innerHTML = basket[item]['sum'].toFixed(2) + "€";
-        total += basket[item]['sum'];
+    orderData = {
+        team: NaN,
+        basket: {},
+        sum: 0,
+        paymentType: ""
     }
 
-    // Sum Block Space
-    {
-        let spacerRow = tableRef.insertRow(-1);
-        let amountCell = spacerRow.insertCell(0);
-        let nameCell = spacerRow.insertCell(1);
-        let sumCell = spacerRow.insertCell(2);
-        sumCell.innerHTML = "<b>-------</b>";
+    resetRegister();
+
+    function resetRegister() {
+        $("#teamSelectDiv").css('visibility', 'visible');
+        $("#itemSelectDiv").css('visibility', 'collapse');
+        $("#check-out").css('visibility', 'collapse');
+        $("#billDiv").css('visibility', 'collapse');
+        orderData = {
+            team: NaN,
+            basket: {},
+            sum: 0,
+            paymentType: 0 // 0: Bar; 1: Rechnung; 10: Einzahlung
+        }
+        getTeamGroups();
+        getItemGroups();
+        //$('html, body').scrollTop($("#teamSelectDiv").offset().top);
+        window.scrollTo(0, 0);
     }
 
-    // Sum Block
-    let sumRow = tableRef.insertRow(-1);
-    let amountCell = sumRow.insertCell(0);
-    let nameCell = sumRow.insertCell(1);
-    let sumCell = sumRow.insertCell(2);
-    amountCell.setAttribute('class', 'columnAmount')
-    nameCell.setAttribute('class', 'columnName')
-    sumCell.setAttribute('class', 'columnTotal')
-    nameCell.innerHTML = "<b>Total</b>";
-    amountCell.innerHTML = "";
-    sumCell.innerHTML = "<b>" + total.toFixed(2) + "€</b>";
 
-    document.getElementById("check-out").style.visibility = "visible";
-}
+    function getTeamGroups() {
+        fetch('{{ url_for("teams.getGroups") }}', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
 
-function submitBill(payment){
-    console.log(payment);
-}
+        })
+            .then((response) => response.json())
+            .then((json) => {
+                teamGroupsData = json;
+                console.debug(teamGroupsData);
+                showTeamSelection();
+            });
+    }
+
+
+
+    function getItemGroups() {
+        fetch('{{ url_for("sales.getGroups") }}', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+
+        })
+            .then((response) => response.json())
+            .then((json) => {
+                itemGroupsData = json;
+                console.debug(itemGroupsData);
+            });
+    }
+
+    function showTeamSelection() {
+        let selectArea = document.getElementById("teamSelectArea");
+        selectArea.innerHTML = "";
+        $(selectArea).addClass('buttonGrid');
+        for (group_id in teamGroupsData) {
+            group = teamGroupsData[group_id]
+            /*
+            selectArea.innerHTML += "<h2>" + group.name + "</h2>";
+            var groupArea = document.createElement('div');
+            $(groupArea)
+                .attr('id', 'groupArea_' + group.id)
+                .addClass('buttonGrid')
+                .appendTo(selectArea);
+            */
+
+            //check if group is aktiv
+            if (group.state == 1) {
+                for (team_id in group['teams']) {
+                    team = group['teams'][team_id];
+                    if (team.state == 1) {
+                        var button = $("<div></div>");
+                        $(button).addClass('teamButton')
+                            .attr('id', 'teamButton_' + team.id)
+                            .html('<b>' + team['nameShort'] + '</b>')
+                            .data('team', team)
+                            .css('background-color', group['color'])
+                            .appendTo(selectArea) //main div
+                            .bind('click', function () {
+                                orderData.team = $(this).data()['team'];
+                                try {
+                                    document.getElementById('click_sound').currentTime = 0;
+                                    document.getElementById('click_sound').play();
+                                } catch (error) {
+                                    console.error(error);
+                                }
+
+                                showItems();
+
+                            })
+                    }
+                }
+            }
+        }
+    }
+
+    function showItems() {
+        clearBill();
+        $('#itemSelectTitel').text("🛒" + orderData.team.name + "🛒");
+        $("#itemSelectDiv").css('visibility', 'visible');
+        $("#teamSelectDiv").css('visibility', 'collapse');
+        $("#billDiv").css('visibility', 'visible');
+
+    }
+
+
+    function addItem(itemId, groupId, name, price, amount) {
+        basket = orderData.basket;
+        groupName = itemGroupsData[groupId].name;
+        console.debug(groupName);
+        if (groupName in basket) {
+            if (name in basket[groupName].items) {
+                basket[groupName].items[name].amount += amount;
+                basket[groupName].items[name].sum += (price * amount);
+            }
+            else {
+                basket[groupName].items[name] = {
+                    'name': name,
+                    'amount': (amount),
+                    'sum': (price * amount),
+                    'id': itemId
+                };
+            }
+        }
+        else {
+            basket[groupName] = {
+                'name': groupName,
+                'id': groupId,
+                'items': {}
+            };
+
+            basket[groupName].items[name] = {
+                'name': name,
+                'amount': (amount),
+                'sum': (price * amount),
+                'id': itemId
+            };
+        }
+        try {
+            document.getElementById('click_sound').currentTime = 0;
+            document.getElementById('click_sound').play();
+        } catch (error) {
+            console.error(error);
+        }
+        try {
+            navigator.vibrate(200); // vibrate for 200ms
+        } catch (error) {
+            console.error(error);
+        }
+        updateBill(basket)
+        console.log(basket)
+        orderData.basket = basket;
+    }
+
+    function clearBill() {
+        let tableRef = document.getElementById("bill");
+        tableRef.innerHTML = "";
+        total = 0;
+        // Title Space
+        {
+            let newRow = tableRef.insertRow(-1);
+            let titleCell = newRow.insertCell(0);
+            titleCell.setAttribute('class', 'billColumnTeam');
+            titleCell.setAttribute('colspan', '3');
+            titleCell.innerHTML = "🛒" + orderData.team.name + "🛒";
+        }
+
+        // Sum Block Space
+        {
+            let spacerRow = tableRef.insertRow(-1);
+            let amountCell = spacerRow.insertCell(0);
+            let nameCell = spacerRow.insertCell(1);
+            let sumCell = spacerRow.insertCell(2);
+            sumCell.innerHTML = "<b>-------</b>";
+        }
+
+        // Sum Block
+        let sumRow = tableRef.insertRow(-1);
+        let amountCell = sumRow.insertCell(0);
+        let nameCell = sumRow.insertCell(1);
+        let sumCell = sumRow.insertCell(2);
+        amountCell.setAttribute('class', 'billColumnAmount')
+        nameCell.setAttribute('class', 'billColumnName')
+        sumCell.setAttribute('class', 'billColumnTotal')
+        nameCell.innerHTML = "<b>Total</b>";
+        amountCell.innerHTML = "";
+        sumCell.innerHTML = "<b>" + total.toFixed(2) + "€</b>";
+
+        document.getElementById("check-out").style.visibility = "visible";
+    }
+
+
+    function updateBill(basket) {
+        let tableRef = document.getElementById("bill");
+        tableRef.innerHTML = "";
+        total = 0;
+        // Title Space
+        {
+            let newRow = tableRef.insertRow(-1);
+            let titleCell = newRow.insertCell(0);
+            titleCell.setAttribute('class', 'billColumnTeam');
+            titleCell.setAttribute('colspan', '3');
+            titleCell.innerHTML = "🛒" + orderData.team.name + "🛒";
+        }
+
+        // items
+        for (group in basket) {
+            //let blankRow = tableRef.insertRow(-1);
+            //let blankCell = blankRow.insertCell(0);
+            //blankCell.innerHTML = ' ';
+            let newRow = tableRef.insertRow(-1);
+            let nameCell = newRow.insertCell(0);
+            nameCell.setAttribute('class', 'billColumnName')
+            nameCell.setAttribute('colspan', '2');
+            nameCell.innerHTML = '-- ' + basket[group]['name'] + ' --';
+
+
+            items = basket[group].items;
+            for (item in items) {
+                let newRow = tableRef.insertRow(-1);
+                let amountCell = newRow.insertCell(0);
+                let nameCell = newRow.insertCell(1);
+                let sumCell = newRow.insertCell(2);
+                amountCell.setAttribute('class', 'billColumnAmount')
+                nameCell.setAttribute('class', 'billColumnName')
+                sumCell.setAttribute('class', 'billColumnSum')
+                nameCell.innerHTML = items[item]['name'];
+                amountCell.innerHTML = items[item]['amount'] + "&nbsp";
+                sumCell.innerHTML = items[item]['sum'].toFixed(2) + "€";
+                total += items[item]['sum'];
+            }
+        }
+
+        // Sum Block Space
+        {
+            let spacerRow = tableRef.insertRow(-1);
+            let amountCell = spacerRow.insertCell(0);
+            let nameCell = spacerRow.insertCell(1);
+            let sumCell = spacerRow.insertCell(2);
+            sumCell.innerHTML = "<b>-------</b>";
+        }
+
+        // Sum Block
+        let sumRow = tableRef.insertRow(-1);
+        let amountCell = sumRow.insertCell(0);
+        let nameCell = sumRow.insertCell(1);
+        let sumCell = sumRow.insertCell(2);
+        amountCell.setAttribute('class', 'billColumnAmount')
+        nameCell.setAttribute('class', 'billColumnName')
+        sumCell.setAttribute('class', 'billColumnTotal')
+        nameCell.innerHTML = "<b>Total</b>";
+        amountCell.innerHTML = "";
+        sumCell.innerHTML = "<b>" + total.toFixed(2) + "€</b>";
+
+        document.getElementById("check-out").style.visibility = "visible";
+        orderData.sum = total.toFixed(2);
+    }
+
+    function submitBill(payment) {
+        try {
+            document.getElementById('cash_sound').currentTime = 0;
+            document.getElementById('cash_sound').play();
+        } catch (error) {
+            console.error(error);
+        }
+        orderData.paymentType = payment;
+        const response = fetch('{{ url_for("sales.createOrder") }}', {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(orderData),
+        });
+
+        console.log(orderData);
+        resetRegister();
+    }
 </script>
 {% endblock %}
