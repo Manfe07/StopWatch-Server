@@ -411,22 +411,53 @@
     }
 
     function submitBill(payment) {
+        var data = {
+            team_id: orderData.team.id,
+            paymentType: payment,
+            items: [],
+            sum: 0
+        }
+
+        for (group in orderData.basket) {
+            let groupName = orderData.basket[group]['name']
+            let groupId = orderData.basket[group]['id']
+
+
+            items = orderData.basket[group].items;
+            for (item in items) {
+                let itemName = items[item]['name'];
+                let itemId = items[item]['id'];
+                let itemAmount = items[item]['amount'];
+                let itemSum = items[item]['sum'];
+                let itemPrice = itemSum / itemAmount;
+
+                data.sum += itemSum;
+                data.items.push({
+                    itemName: itemName,
+                    itemId: itemId,
+                    groupName: groupName,
+                    groupId: groupId,
+                    itemPrice: itemPrice,
+                    itemAmount: itemAmount,
+                    itemSum: itemSum,
+                })
+            }
+        }
+        const response = fetch('{{ url_for("sales.createOrder") }}', {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+        });
+
+        console.log(data);
         try {
             document.getElementById('cash_sound').currentTime = 0;
             document.getElementById('cash_sound').play();
         } catch (error) {
             console.error(error);
         }
-        orderData.paymentType = payment;
-        const response = fetch('{{ url_for("sales.createOrder") }}', {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(orderData),
-        });
-
-        console.log(orderData);
         resetRegister();
     }
 </script>
