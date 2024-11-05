@@ -147,7 +147,7 @@
                             <td class="name"><strong>{{item['name']}}</strong></td>
                             <td class="description"><strong>{{item['description']}}</strong></td>
                             <td class="price"><strong>{{'%0.2f'| format(item['price']|float)}} €</strong></td>
-                            <td class="changedBy"><strong>{{users[item['changedBy']|default(1, true)]['username']}}</strong></td>
+                            <td class="changedBy"><strong>{{(item['changedBy']|default(0))}}</strong></td>
                             <td class="state">
                                 {% if item['state'] == 0 %}
                                     Unklar

@@ -1,13 +1,10 @@
 from flask import Blueprint, render_template, Flask, request, jsonify, redirect, url_for, session, flash
-from module_sales.models import db, Item, ItemGroup
 from module_users.datahandler import User
 from module_users.users import getSessionUser
-import logging
 
-logger = logging.getLogger(__name__)
+from . import sales_Blueprint, logger
+from .models import db, Item, ItemGroup, Order, OrderItem
 
-
-sales_Blueprint = Blueprint('sales', __name__, template_folder='templates')
 
 def init():
     return True
@@ -18,9 +15,7 @@ def overview():
         itemGroups = db.session.query(ItemGroup).order_by(ItemGroup.name)
         items = db.session.query(Item).order_by(Item.name)
         users = {}
-        for user in db.session.query(User):
-            users[user.id] = user
-
+    
         return render_template('sales/overview.html', itemGroups=itemGroups, items=items, users=users)
     else:
         return redirect(url_for('index'))
@@ -170,6 +165,30 @@ def createOrder():
     if session.get('permission', 1) >= 0:
         order = request.json
         logger.debug(order)
+        
+        team = Team.query.filter_by(id=data.team_id).first()
+        cashier = User.query.filter_by(id=session['user_id']).first()
+
+        order = Order(
+            team=team,
+            cashier=cashier,
+            sum= data.sum
+        )
+
+        db.session.add(order)
+        
+        for item in data.items:
+            orderItem = OrderItem(
+                order=order,
+                item=Item.query.filter_by(id=item.id).first(),
+                quantity=item.amount,
+                price=(item.sum / item.amount),
+                sum=item.sum
+            )
+            db.session.add(orderItem)
+        db.session.commit()
+        
+
         return {'success': True }
     else:
         return None

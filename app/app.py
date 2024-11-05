@@ -5,7 +5,8 @@ from flask_migrate import Migrate
 from tools import * 
 
 import module_users.users as users
-import module_sales.sales as sales
+from module_teams import teams_Blueprint
+from module_sales import sales_Blueprint
 
 from database import db
 import logging
@@ -38,11 +39,9 @@ metrics.info('app_info', 'Application info', version='1.0.3')
 app.config['SECRET_KEY'] = config['Flask']['SECRET_KEY']
 socketio = SocketIO(app, cors_allowed_origins='*')
 
-from module_teams import teams_Blueprint
-app.register_blueprint(teams_Blueprint, url_prefix="/teams")
-
 app.register_blueprint(users.users_Blueprint, url_prefix="/users")
-app.register_blueprint(sales.sales_Blueprint, url_prefix="/sales")
+app.register_blueprint(teams_Blueprint, url_prefix="/teams")
+app.register_blueprint(sales_Blueprint, url_prefix="/sales")
 
 app.config['SQLALCHEMY_DATABASE_URI'] = config['Flask']['SQLALCHEMY_DATABASE_URI']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -53,7 +52,6 @@ with app.app_context():
     db.init_app(app)
     db.create_all()
     users.init()
-    sales.init()
     db.session.commit()
 
     MIGRATION_DIR = os.path.join('data', 'migrations')  
