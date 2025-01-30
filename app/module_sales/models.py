@@ -14,7 +14,7 @@ class ItemGroup(db.Model):
   description = db.Column(db.VARCHAR(100), nullable=True)
   color = db.Column(db.VARCHAR(10), nullable=True)
   state = db.Column(db.Integer, server_default= "0")
-  
+
   items = db.Relationship('Item', backref='item', order_by='item.columns.name.asc()')
 
 class Item(db.Model):
@@ -37,14 +37,16 @@ class Order(db.Model):
   __tablename__ = 'order'
     
   id = db.Column(db.Integer, primary_key=True)
-  TeamId = db.Column(db.Integer, server_default= "0")
-  cashierId = db.Column(db.Integer, server_default= "0")
+  sum = db.Column(db.Float, nullable=False)
+  teamId = db.Column(db.Integer, db.ForeignKey('team.id'), nullable=False)
+  cashierId = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
   created_at = db.Column(db.DateTime(timezone=True),
                           server_default=func.now())
-  
+  items = db.Relationship('OrderItem', backref='orderItem', order_by='orderItem.columns.id.asc()')
+
   # Relationships
-  #team = db.relationship("Team", back_populates="orders")
-  #orderItems = db.relationship("OrderItem.id", back_populates="order")
+  team = db.relationship("Team")
+  user = db.relationship("User")
 
 
 class OrderItem(db.Model):
@@ -56,7 +58,7 @@ class OrderItem(db.Model):
   quantity = db.Column(db.Integer, nullable=False)
   price = db.Column(db.Float, nullable=False)
   sum = db.Column(db.Float, nullable=False)
-  
+ 
   # Relationships
-  #order = db.relationship("Order.id", back_populates="orderItems")
-  #item = db.relationship("Item.id", back_populates="orderItems")
+  order = db.relationship("Order")
+  item = db.relationship("Item")
