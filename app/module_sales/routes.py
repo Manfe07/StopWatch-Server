@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, Flask, request, jsonify, redirect, url_for, session, flash
 from module_users.datahandler import User
 from module_users.users import getSessionUser
+from module_teams.models import Team
 
 from . import sales_Blueprint, logger
 from .models import db, Item, ItemGroup, Order, OrderItem
@@ -10,13 +11,34 @@ def init():
     return True
 
 @sales_Blueprint.route('/', methods=['GET'])
-def overview():
+def overviewItems():
     if session.get('permission', 0) >= 1:
         itemGroups = db.session.query(ItemGroup).order_by(ItemGroup.name)
         items = db.session.query(Item).order_by(Item.name)
         users = {}
     
-        return render_template('sales/overview.html', itemGroups=itemGroups, items=items, users=users)
+        return render_template('sales/overviewItems.html', itemGroups=itemGroups, items=items, users=users)
+    else:
+        return redirect(url_for('index'))
+
+@sales_Blueprint.route('/viewOrders', methods=['GET'])
+def overviewOrders():
+    if session.get('permission', 0) >= 1:
+        #orders = db.session.query(Order)
+        orders = db.session.query(Order,Team).join(Team)
+    
+        return render_template('sales/overviewOrders.html', orders=orders)
+    else:
+        return redirect(url_for('index'))
+
+
+@sales_Blueprint.route('/cashRegister', methods=['GET'])
+def cashRegister():
+    if session.get('permission', 0) >= 1:
+    
+        itemGroups = db.session.query(ItemGroup)
+
+        return render_template('sales/cashRegister.html', itemGroups=itemGroups)
     else:
         return redirect(url_for('index'))
 
@@ -45,16 +67,16 @@ def updateItemGroup():
                     db.session.add(group)
 
                 db.session.commit()
-                return redirect(url_for('sales.overview'))
+                return redirect(url_for('sales.overviewItems'))
 
 
             except Exception as e:
                 print(e)
                 flash("Error updating itemGroup " + form["name"] )
-            return redirect(url_for('sales.overview'))
+            return redirect(url_for('sales.overviewItems'))
             
         elif request.method == 'GET':
-            return redirect(url_for('sales.overview'))
+            return redirect(url_for('sales.overviewItems'))
     else:
         return redirect(url_for('index'))
 
@@ -88,16 +110,16 @@ def updateItem():
                     db.session.add(item)
 
                 db.session.commit()
-                return redirect(url_for('sales.overview'))
+                return redirect(url_for('sales.overviewItems'))
 
 
             except Exception as e:
                 print(e)
                 flash("Error updating itemGroup " + form["name"] )
-            return redirect(url_for('sales.overview'))
+            return redirect(url_for('sales.overviewItems'))
             
         elif request.method == 'GET':
-            return redirect(url_for('sales.overview'))
+            return redirect(url_for('sales.overviewItems'))
     else:
         return redirect(url_for('index'))
     
@@ -163,27 +185,28 @@ def getGroups():
 @sales_Blueprint.route('/createOrder', methods=['POST'])
 def createOrder():    
     if session.get('permission', 1) >= 0:
-        order = request.json
-        logger.debug(order)
+        data = request.json
+        logger.debug(data)
         
-        team = Team.query.filter_by(id=data.team_id).first()
-        cashier = User.query.filter_by(id=session['user_id']).first()
 
         order = Order(
-            team=team,
-            cashier=cashier,
-            sum= data.sum
+            teamId = data['team_id'],
+            cashierId = session['user_id'],
+            sum = data['sum'],
+            itemCount = data['itemCount']
         )
 
         db.session.add(order)
-        
-        for item in data.items:
+        db.session.commit()
+
+        itemCount = 0
+        for item in data['items']:
             orderItem = OrderItem(
-                order=order,
-                item=Item.query.filter_by(id=item.id).first(),
-                quantity=item.amount,
-                price=(item.sum / item.amount),
-                sum=item.sum
+                orderId=order.id,
+                itemId=item['itemId'],
+                quantity=item['amount'],
+                price=item['price'],
+                sum=item['sum']
             )
             db.session.add(orderItem)
         db.session.commit()
@@ -193,6 +216,33 @@ def createOrder():
     else:
         return None
 
+
+@sales_Blueprint.route('/getOrders', methods=['GET'])
+def viewOrders():
+    orders = db.session.query(Order,Team).join(Team)
+    data = []
+    for order, team in orders:
+        items= []
+        for item in order.items:
+            items.append({
+                'id': item.id,
+                'itemId': item.itemId,
+                'quantity': item.quantity,
+                'price': item.price,
+                'sum': item.sum
+            })
+        data.append({
+            'id': order.id,
+            'sum': order.sum,
+            'teamId': team.id,
+            'teamName': team.name,
+            'cashierId': order.cashierId,
+            'created_at': order.created_at,
+            'items': items,
+            'itemCount': order.itemCount
+        })
+        
+    return data
 
 @sales_Blueprint.route('/getItems', methods=['GET'])
 def getItems():    
@@ -218,13 +268,4 @@ def getItems():
         return None
 
 
-@sales_Blueprint.route('/cashRegister', methods=['GET'])
-def cashRegister():
-    if session.get('permission', 0) >= 1:
-    
-        itemGroups = db.session.query(ItemGroup)
-
-        return render_template('sales/cashRegister.html', itemGroups=itemGroups)
-    else:
-        return redirect(url_for('index'))
 

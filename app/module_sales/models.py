@@ -43,6 +43,7 @@ class Order(db.Model):
   created_at = db.Column(db.DateTime(timezone=True),
                           server_default=func.now())
   items = db.Relationship('OrderItem', backref='orderItem', order_by='orderItem.columns.id.asc()')
+  itemCount = db.Column(db.Integer, nullable=False)
 
   # Relationships
   team = db.relationship("Team")

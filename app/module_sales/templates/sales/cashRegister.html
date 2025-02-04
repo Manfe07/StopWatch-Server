@@ -8,7 +8,7 @@
     <source src="/static/sounds/cash.mp3" />
 </audio>
 <audio id="click_sound" preload="auto">
-    <source src="/static/sounds/click.wav" />
+    <source src="/static/sounds/click.mp3" />
 </audio>
 
 <div class='card' id="teamSelectDiv" style="visibility:visible;">
@@ -418,7 +418,8 @@
             team_id: orderData.team.id,
             paymentType: payment,
             items: [],
-            sum: 0
+            sum: 0,
+            itemCount: 0
         }
 
         for (group in orderData.basket) {
@@ -435,14 +436,15 @@
                 let itemPrice = itemSum / itemAmount;
 
                 data.sum += itemSum;
+                data.itemCount += itemAmount;
                 data.items.push({
-                    itemName: itemName,
+                    name: itemName,
                     itemId: itemId,
                     groupName: groupName,
                     groupId: groupId,
-                    itemPrice: itemPrice,
-                    itemAmount: itemAmount,
-                    itemSum: itemSum,
+                    price: itemPrice,
+                    amount: itemAmount,
+                    sum: itemSum,
                 })
             }
         }

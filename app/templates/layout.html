@@ -68,7 +68,8 @@
                             Verwalten
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('sales.overview') }}">Artikel</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('sales.overviewItems') }}">Artikel</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('sales.overviewOrders') }}">Käufe</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('teams.overview') }}">Teams</a></li>
                             {% if session['permission'] >= 3 %}
                             <li><a class="dropdown-item" href="{{ url_for('users.manageUsers') }}">Benutzer</a></li>

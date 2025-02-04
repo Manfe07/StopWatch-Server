@@ -11,3 +11,4 @@ docker-compose.yml
 *.db
 logs/
 app/config.ini
+test.ipynb
